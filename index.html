@@ -974,10 +974,10 @@ function renderUsers(){
       <span class="ubadge ${u.role==='admin'?'role-admin':'role-emp'}">${u.role==='admin'?'관리자':'직원'}</span>
       <span class="ubadge ${pendBadge?'st-pending':'st-active'}">${pendBadge?'승인 대기':'활성'}</span>
       <div class="uacts">
-        ${pendBadge ? `<button class="ubtn approve" onclick="approveUser(${u.id})">승인</button>` : ''}
-        ${(!pendBadge) ? `<button class="ubtn" onclick="resetUserPw(${u.id})">비번 초기화</button>` : ''}
-        ${mine ? '' : `<button class="ubtn" onclick="setUserRole(${u.id},'${u.role==='admin'?'employee':'admin'}')">${u.role==='admin'?'직원으로':'관리자로'}</button>`}
-        ${mine ? '' : `<button class="ubtn danger" onclick="removeUser(${u.id}, ${pendBadge?'true':'false'})">${pendBadge?'거절':'삭제'}</button>`}
+        ${pendBadge ? `<button class="ubtn approve" onclick="approveUser('${u.id}')">승인</button>` : ''}
+        ${(!pendBadge) ? `<button class="ubtn" onclick="resetUserPw('${u.id}')">비번 초기화</button>` : ''}
+        ${mine ? '' : `<button class="ubtn" onclick="setUserRole('${u.id}','${u.role==='admin'?'employee':'admin'}')">${u.role==='admin'?'직원으로':'관리자로'}</button>`}
+        ${mine ? '' : `<button class="ubtn danger" onclick="removeUser('${u.id}', ${pendBadge?'true':'false'})">${pendBadge?'거절':'삭제'}</button>`}
       </div>
     </div>`;
   }).join('');
