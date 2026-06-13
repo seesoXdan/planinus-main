@@ -372,26 +372,30 @@ body:has(#page-quote.active) .main{max-width:1280px}
 .ph-actions{display:flex;gap:8px;flex-wrap:wrap}
 .btn-add.ghost{background:var(--mint-bg);color:var(--teal-deep)}
 .btn-add.ghost:hover{background:#E2EEEA}
-.partner-row{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line)}
-.partner-row:last-child{border-bottom:none}
-.partner-ico{
-  width:42px;height:42px;border-radius:11px;background:#EAF4F1;color:var(--teal);
-  flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;
-}
-.pmeta{flex:1;min-width:0}
-.pname{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.pname b{font-size:.92rem;font-weight:600}
-.badge.field{background:#EAF4F1;color:var(--teal-deep)}
-.pcontact{font-size:.77rem;color:#8AA39D;margin-top:3px;display:flex;gap:14px;flex-wrap:wrap}
-.pcontact a{color:#5E7A74;text-decoration:none}
-.pcontact a:hover{color:var(--teal);text-decoration:underline}
-.pmemo{font-size:.77rem;color:#9DB3AE;margin-top:4px;line-height:1.5}
+#partner-list{display:flex;flex-direction:column;gap:14px;background:transparent;border:none;padding:0;box-shadow:none}
+#partner-list .empty{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:13px;overflow:hidden;box-shadow:0 1px 6px rgba(22,51,46,.04)}
+.pcard-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 16px;background:#F7FAF9;border-bottom:1px solid var(--line)}
+.pcard-head .ptitle{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.pcard-head .ptitle b{font-size:.95rem;font-weight:700;color:var(--teal-deep);letter-spacing:-.01em}
+.badge.field{background:var(--teal);color:#fff;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:99px}
+.pcard-body{padding:12px 16px}
+.pcontact{font-size:.85rem;color:#6E8983;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.pcontact .pman{font-weight:700;color:#2E433E}
+.pcontact .dot{color:#BBD0CB}
+.pcontact a{color:var(--teal);text-decoration:none;font-weight:600}
+.pcontact a:hover{text-decoration:underline}
+.ptags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ptag{background:#fff;color:#5E7A74;font-size:.75rem;padding:4px 12px;border-radius:99px;border:1px solid var(--line)}
+.pmemo{font-size:.8rem;color:#9DB3AE;margin-top:7px;line-height:1.5}
 .pacts{display:flex;gap:2px;flex-shrink:0}
 .icon-edit{
-  flex-shrink:0;width:28px;height:28px;border:none;border-radius:8px;background:transparent;
-  color:#B6C7C2;font-size:.92rem;transition:.12s;
+  flex-shrink:0;width:27px;height:27px;border:none;border-radius:7px;background:transparent;
+  color:#7E938E;font-size:.9rem;transition:.12s;opacity:.7;cursor:pointer;
 }
-.icon-edit:hover{background:#EAF4F1;color:var(--teal)}
+.icon-edit:hover{background:#fff;opacity:1}
+.pcard-head .icon-del{opacity:.65}
+.pcard-head .icon-del:hover{opacity:1}
 .cat-manage-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .cat-manage-row input{flex:1}
 .cat-manage-row .ubtn{flex:0 0 auto}
@@ -1023,6 +1027,10 @@ async function loadPartners(){
   }catch(err){ /* 비로그인 등은 조용히 무시 */ }
 }
 const catName = id => { const c = PARTNER_CATS.find(x=>x.id===id); return c ? c.name : '미분류'; };
+/* 메모는 항상 서술형 텍스트로만 표시 */
+function partnerTags(memo){
+  return {label:'', tags:[], plain:(memo||'').trim()};
+}
 function renderPartnerCats(){
   const html = [`<button class="chip${partnerCat==='all'?' on':''}" data-c="all">전체</button>`]
     .concat(PARTNER_CATS.map(c=>`<button class="chip${partnerCat===c.id?' on':''}" data-c="${c.id}">${esc(c.name)}</button>`));
@@ -1033,23 +1041,29 @@ function renderPartners(){
   const list = PARTNERS.filter(p =>
     (partnerCat==='all' || p.catId===partnerCat) &&
     (!q || `${p.name} ${p.manager||''} ${p.phone||''} ${p.email||''}`.toLowerCase().includes(q)));
-  $('#partner-list').innerHTML = list.length ? list.map(p => `
-    <div class="partner-row">
-      <div class="partner-ico">${esc((p.name||'·')[0])}</div>
-      <div class="pmeta">
-        <div class="pname"><b>${esc(p.name)}</b><span class="badge field">${esc(catName(p.catId))}</span></div>
+  $('#partner-list').innerHTML = list.length ? list.map(p => {
+    const t = partnerTags(p.memo);
+    return `
+    <div class="pcard">
+      <div class="pcard-head">
+        <div class="ptitle"><b>${esc(p.name)}</b><span class="badge field">${esc(catName(p.catId))}</span></div>
+        <div class="pacts">
+          <button class="icon-edit" title="수정" onclick="openPartnerModal('${p.id}')">✎</button>
+          <button class="icon-del" title="삭제" onclick="deletePartner('${p.id}')">×</button>
+        </div>
+      </div>
+      <div class="pcard-body">
         <div class="pcontact">
-          ${p.manager?`<span>담당 ${esc(p.manager)}</span>`:''}
+          ${p.manager?`<span class="pman">${esc(p.manager)}</span>`:''}
+          ${p.manager&&p.phone?`<span class="dot">·</span>`:''}
           ${p.phone?`<a href="tel:${esc(p.phone)}">${esc(p.phone)}</a>`:''}
+          ${(p.manager||p.phone)&&p.email?`<span class="dot">·</span>`:''}
           ${p.email?`<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>`:''}
         </div>
-        ${p.memo?`<div class="pmemo">${esc(p.memo).replace(/\n/g,'<br>')}</div>`:''}
+        ${t.plain?`<div class="pmemo">${esc(t.plain).replace(/\n/g,'<br>')}</div>`:''}
       </div>
-      <div class="pacts">
-        <button class="icon-edit" title="수정" onclick="openPartnerModal('${p.id}')">✎</button>
-        <button class="icon-del" title="삭제" onclick="deletePartner('${p.id}')">×</button>
-      </div>
-    </div>`).join('')
+    </div>`;
+  }).join('')
   : `<div class="empty">${q ? '검색 결과가 없습니다.' : '등록된 협력업체가 없습니다. 우측 상단 ＋ 업체 등록을 눌러 추가하세요.'}</div>`;
 }
 $('#partner-search').addEventListener('input', renderPartners);
