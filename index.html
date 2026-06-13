@@ -415,6 +415,16 @@ body:has(#page-quote.active) .main{max-width:1280px}
   .dash-grid{grid-template-columns:1fr}
   :root{font-size:14px}
 }
+/* 좁은 화면(휴대폰) — 직원 관리 행 레이아웃 */
+@media (max-width:560px){
+  .urow{flex-wrap:wrap;align-items:center;gap:8px 10px;padding:14px 16px}
+  .urow .uava{align-self:flex-start}
+  .umeta{flex:1 1 140px;min-width:0}
+  .umeta b{white-space:normal;word-break:keep-all;font-size:.95rem;line-height:1.35}
+  .umeta span{white-space:normal;word-break:break-all}
+  .uacts{flex:1 1 100%;justify-content:flex-start;gap:8px;margin-top:2px}
+  .ubtn{flex:1 1 auto;text-align:center;padding:9px 8px}
+}
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
 }
@@ -638,7 +648,7 @@ body:has(#page-quote.active) .main{max-width:1280px}
 /* ═══════════ 플래니어스 포털 — 프론트엔드 (백엔드 API 연동) ═══════════ */
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
-const TODAY = new Date();              // 데모 기준일: 2026-06-12
+const TODAY = new Date();                         // 실제 오늘 날짜
 const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -904,13 +914,13 @@ function renderLib(){
       <div class="fmeta"><b>${esc(f.name)}</b><span>${esc(f.size)} · ${esc(f.uploaded_at)} 업로드</span></div>
       <span class="fver">${esc(f.version)}</span>
       ${f.has_file
-        ? `<button class="btn-dl" onclick="downloadFile(${f.id})">
+        ? `<button class="btn-dl" onclick="downloadFile('${f.id}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m0 0 4-4m-4 4-4-4"/><path d="M4 19h16"/></svg>
         다운로드</button>`
         : `<button class="btn-dl" style="opacity:.5;cursor:default" title="첨부 파일 없음" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m0 0 4-4m-4 4-4-4"/><path d="M4 19h16"/></svg>
         파일 없음</button>`}
-      ${isAdmin ? `<button class="icon-del" title="삭제" onclick="deleteFile(${f.id})">×</button>` : ''}
+      ${isAdmin ? `<button class="icon-del" title="삭제" onclick="deleteFile('${f.id}')">×</button>` : ''}
     </div>`).join('')
   : `<div class="empty">${q ? '검색 결과가 없습니다. 다른 키워드로 검색해 보세요.' : '이 카테고리에 등록된 파일이 없습니다. 위 폴더 카드를 눌러 구글 드라이브에서 확인하세요.'}</div>`;
 }
@@ -931,7 +941,7 @@ function renderNotices(){
         <span class="badge cat">${esc(n.category)}</span>
         <b>${esc(n.title)}</b>
         <time>${(n.created_at||'').slice(0,10)}</time>
-        ${isAdmin ? `<button class="icon-del" title="삭제" onclick="event.stopPropagation();deleteNotice(${n.id})">×</button>` : ''}
+        ${isAdmin ? `<button class="icon-del" title="삭제" onclick="event.stopPropagation();deleteNotice('${n.id}')">×</button>` : ''}
       </div>
       <div class="notice-body">${esc(n.body).replace(/\n/g,'<br>')}<div class="notice-meta">작성: ${esc(n.author)} · ${(n.created_at||'').slice(0,10)}</div></div>
     </div>`).join('')
@@ -1029,9 +1039,9 @@ function openEventModal(ev, presetDate){
       <div class="field"><label>시간 (선택)</label><input type="text" id="m-time" value="${isEdit?esc(ev.time||''):''}" placeholder="예) 14:00"></div>
     </div>
     <div class="modal-actions">
-      ${isEdit ? `<button class="btn-cancel" style="flex:0 0 auto;color:var(--coral)" onclick="delEventFromModal(${ev.id})">삭제</button>` : ''}
+      ${isEdit ? `<button class="btn-cancel" style="flex:0 0 auto;color:var(--coral)" onclick="delEventFromModal('${ev.id}')">삭제</button>` : ''}
       <button class="btn-cancel" onclick="closeModal()">취소</button>
-      <button class="btn-save" onclick="submitEvent(${isEdit ? ev.id : 'null'})">${isEdit ? '저장' : '추가'}</button>
+      <button class="btn-save" onclick="submitEvent(${isEdit ? `'${ev.id}'` : 'null'})">${isEdit ? '저장' : '추가'}</button>
     </div>`;
   modalBack.classList.add('open'); setTimeout(()=>$('#m-title').focus(),50);
 }
