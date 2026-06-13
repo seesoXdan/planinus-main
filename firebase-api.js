@@ -398,6 +398,89 @@
       return J({ ok: true });
     }
 
+    /* ===== 협력업체 분야(partner_cats) — 승인 직원이면 누구나 ===== */
+    if (path === '/partner-cats' && method === 'GET') {
+      await requireUser();
+      var pcs = await db.collection('partner_cats').get();
+      var pca = pcs.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; });
+      pca.sort(function (a, b) {
+        return (Number(a.order) || 0) - (Number(b.order) || 0) ||
+          String(a.created_at || '').localeCompare(String(b.created_at || ''));
+      });
+      return J(pca.map(function (c) { return { id: c.id, name: c.name, order: Number(c.order) || 0 }; }));
+    }
+    if (path === '/partner-cats' && method === 'POST') {
+      await requireUser();
+      var pcb = jsonBody || {};
+      if (!pcb.name || !String(pcb.name).trim()) return ERR('분야 이름을 입력해 주세요.');
+      var pcdoc = { name: String(pcb.name).trim(), order: Number(pcb.order) || 0, created_at: nowStr() };
+      var pcref = await db.collection('partner_cats').add(pcdoc);
+      pcdoc.id = pcref.id;
+      return J(pcdoc);
+    }
+    var mPc = path.match(/^\/partner-cats\/([^/]+)$/);
+    if (mPc && method === 'PUT') {
+      await requireUser();
+      var pcu = jsonBody || {};
+      var pcup = {};
+      if (pcu.name != null) pcup.name = String(pcu.name).trim();
+      if (pcu.order != null) pcup.order = Number(pcu.order) || 0;
+      await db.collection('partner_cats').doc(mPc[1]).update(pcup);
+      pcup.id = mPc[1];
+      return J(pcup);
+    }
+    if (mPc && method === 'DELETE') {
+      await requireUser();
+      await db.collection('partner_cats').doc(mPc[1]).delete();
+      return J({ ok: true });
+    }
+
+    /* ===== 협력업체(partners) — 승인 직원이면 누구나 ===== */
+    if (path === '/partners' && method === 'GET') {
+      await requireUser();
+      var ps = await db.collection('partners').get();
+      var pa = ps.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; });
+      pa.sort(function (a, b) { return String(a.name || '').localeCompare(String(b.name || ''), 'ko'); });
+      return J(pa.map(function (p) {
+        return {
+          id: p.id, name: p.name, catId: p.catId || '',
+          manager: p.manager || '', phone: p.phone || '', email: p.email || '', memo: p.memo || ''
+        };
+      }));
+    }
+    if (path === '/partners' && method === 'POST') {
+      var ptm = await requireUser();
+      var ptb = jsonBody || {};
+      if (!ptb.name || !String(ptb.name).trim()) return ERR('업체명을 입력해 주세요.');
+      var ptdoc = {
+        name: String(ptb.name).trim(), catId: ptb.catId || '',
+        manager: String(ptb.manager || '').trim(), phone: String(ptb.phone || '').trim(),
+        email: String(ptb.email || '').trim(), memo: String(ptb.memo || '').trim(),
+        created_by: ptm.id, created_at: nowStr()
+      };
+      var ptref = await db.collection('partners').add(ptdoc);
+      ptdoc.id = ptref.id;
+      return J(ptdoc);
+    }
+    var mPt = path.match(/^\/partners\/([^/]+)$/);
+    if (mPt && method === 'PUT') {
+      await requireUser();
+      var ptu = jsonBody || {};
+      var ptup = {
+        name: String(ptu.name || '').trim(), catId: ptu.catId || '',
+        manager: String(ptu.manager || '').trim(), phone: String(ptu.phone || '').trim(),
+        email: String(ptu.email || '').trim(), memo: String(ptu.memo || '').trim()
+      };
+      await db.collection('partners').doc(mPt[1]).update(ptup);
+      ptup.id = mPt[1];
+      return J(ptup);
+    }
+    if (mPt && method === 'DELETE') {
+      await requireUser();
+      await db.collection('partners').doc(mPt[1]).delete();
+      return J({ ok: true });
+    }
+
     return ERR('알 수 없는 요청입니다: ' + method + ' ' + path, 404);
   }
 
