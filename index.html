@@ -368,6 +368,34 @@ body:has(#page-quote.active) .main{max-width:1280px}
 .fc-meta span{font-size:.75rem;color:#8AA39D}
 .fc-open{font-size:.72rem;font-weight:700;color:var(--teal);flex-shrink:0;display:flex;align-items:center;gap:3px}
 
+/* ───────── 협력업체 ───────── */
+.ph-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-add.ghost{background:var(--mint-bg);color:var(--teal-deep)}
+.btn-add.ghost:hover{background:#E2EEEA}
+.partner-row{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.partner-row:last-child{border-bottom:none}
+.partner-ico{
+  width:42px;height:42px;border-radius:11px;background:#EAF4F1;color:var(--teal);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;
+}
+.pmeta{flex:1;min-width:0}
+.pname{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pname b{font-size:.92rem;font-weight:600}
+.badge.field{background:#EAF4F1;color:var(--teal-deep)}
+.pcontact{font-size:.77rem;color:#8AA39D;margin-top:3px;display:flex;gap:14px;flex-wrap:wrap}
+.pcontact a{color:#5E7A74;text-decoration:none}
+.pcontact a:hover{color:var(--teal);text-decoration:underline}
+.pmemo{font-size:.77rem;color:#9DB3AE;margin-top:4px;line-height:1.5}
+.pacts{display:flex;gap:2px;flex-shrink:0}
+.icon-edit{
+  flex-shrink:0;width:28px;height:28px;border:none;border-radius:8px;background:transparent;
+  color:#B6C7C2;font-size:.92rem;transition:.12s;
+}
+.icon-edit:hover{background:#EAF4F1;color:var(--teal)}
+.cat-manage-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cat-manage-row input{flex:1}
+.cat-manage-row .ubtn{flex:0 0 auto}
+
 /* ───────── 직원 관리 ───────── */
 .nav-badge{
   margin-left:auto;background:var(--coral);color:#fff;font-size:.66rem;font-weight:700;
@@ -506,6 +534,9 @@ body:has(#page-quote.active) .main{max-width:1280px}
       <button data-page="quote">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13a0 0 0 0 1 0 0H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5M9 13h6M9 17h6M9 9h2"/></svg>
         견적서</button>
+      <button data-page="partners">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l5-3 5 3v13M9 21v-4h2v4M14 21V11l5-2v12"/><path d="M8 9h0M8 12h0M8 15h0"/></svg>
+        협력업체</button>
       <button data-page="users" id="nav-users" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17.5" cy="9" r="2.6"/><path d="M16 14.5a4.6 4.6 0 0 1 4.5 4.5"/></svg>
         직원 관리<span class="nav-badge" id="nav-users-badge" style="display:none">0</span></button>
@@ -621,6 +652,25 @@ body:has(#page-quote.active) .main{max-width:1280px}
         </div>
       </section>
 
+      <!-- ── 협력업체 ── -->
+      <section class="page" id="page-partners">
+        <div class="page-head">
+          <div><h1>협력업체</h1><p>분야별 협력업체 연락처를 한곳에서 관리하세요.</p></div>
+          <div class="ph-actions">
+            <button class="btn-add ghost" id="manage-cats-btn">분야 관리</button>
+            <button class="btn-add" id="add-partner-btn">＋ 업체 등록</button>
+          </div>
+        </div>
+        <div class="lib-toolbar">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="partner-search" type="text" placeholder="업체명·담당자·연락처 검색">
+          </div>
+          <div class="cal-filters" id="partner-cats"></div>
+        </div>
+        <div class="card" id="partner-list"></div>
+      </section>
+
       <!-- ── 직원 관리 (관리자 전용) ── -->
       <section class="page" id="page-users">
         <div class="page-head">
@@ -655,6 +705,7 @@ const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;',
 let TOKEN = localStorage.getItem('planinus_token') || '';
 let ME = null;
 let EVENTS = [], NOTICES = [], FILES = [];
+let PARTNERS = [], PARTNER_CATS = [], partnerCat = 'all';
 
 const CAT_LABEL = {company:'회사 일정', event:'행사 일정', deadline:'마감', off:'휴가·휴무'};
 const ICON = {pdf:'PDF', doc:'DOC', xls:'XLS', zip:'ZIP', ppt:'PPT'};
@@ -803,6 +854,7 @@ async function loadAll(){
     const [ev, no, fi] = await Promise.all([api('/events'), api('/notices'), api('/files')]);
     EVENTS = ev; NOTICES = no; FILES = fi;
     renderDash(); renderCal(); renderLib(); renderNotices();
+    loadPartners();
   }catch(err){ toast(err.message, true); }
 }
 
@@ -956,6 +1008,150 @@ $('#notice-list').addEventListener('click', e => {
 async function deleteEvent(id){ try{ await api('/events/'+id,{method:'DELETE'}); toast('일정을 삭제했습니다.'); await loadAll(); }catch(err){ toast(err.message,true); } }
 async function deleteNotice(id){ if(!confirm('이 공지를 삭제할까요?')) return; try{ await api('/notices/'+id,{method:'DELETE'}); toast('공지를 삭제했습니다.'); await loadAll(); }catch(err){ toast(err.message,true); } }
 async function deleteFile(id){ if(!confirm('이 자료를 삭제할까요?')) return; try{ await api('/files/'+id,{method:'DELETE'}); toast('자료를 삭제했습니다.'); await loadAll(); }catch(err){ toast(err.message,true); } }
+
+/* ── 협력업체 ── */
+async function loadPartners(){
+  try{
+    let [cats, list] = await Promise.all([api('/partner-cats'), api('/partners')]);
+    if(!cats.length){
+      const defaults = ['시스템','음향','부스','렌탈','홈페이지','인쇄'];
+      await Promise.all(defaults.map((name,i)=>api('/partner-cats',{method:'POST',body:{name,order:i}})));
+      cats = await api('/partner-cats');
+    }
+    PARTNER_CATS = cats; PARTNERS = list;
+    renderPartnerCats(); renderPartners();
+  }catch(err){ /* 비로그인 등은 조용히 무시 */ }
+}
+const catName = id => { const c = PARTNER_CATS.find(x=>x.id===id); return c ? c.name : '미분류'; };
+function renderPartnerCats(){
+  const html = [`<button class="chip${partnerCat==='all'?' on':''}" data-c="all">전체</button>`]
+    .concat(PARTNER_CATS.map(c=>`<button class="chip${partnerCat===c.id?' on':''}" data-c="${c.id}">${esc(c.name)}</button>`));
+  $('#partner-cats').innerHTML = html.join('');
+}
+function renderPartners(){
+  const q = $('#partner-search').value.trim().toLowerCase();
+  const list = PARTNERS.filter(p =>
+    (partnerCat==='all' || p.catId===partnerCat) &&
+    (!q || `${p.name} ${p.manager||''} ${p.phone||''} ${p.email||''}`.toLowerCase().includes(q)));
+  $('#partner-list').innerHTML = list.length ? list.map(p => `
+    <div class="partner-row">
+      <div class="partner-ico">${esc((p.name||'·')[0])}</div>
+      <div class="pmeta">
+        <div class="pname"><b>${esc(p.name)}</b><span class="badge field">${esc(catName(p.catId))}</span></div>
+        <div class="pcontact">
+          ${p.manager?`<span>담당 ${esc(p.manager)}</span>`:''}
+          ${p.phone?`<a href="tel:${esc(p.phone)}">${esc(p.phone)}</a>`:''}
+          ${p.email?`<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>`:''}
+        </div>
+        ${p.memo?`<div class="pmemo">${esc(p.memo).replace(/\n/g,'<br>')}</div>`:''}
+      </div>
+      <div class="pacts">
+        <button class="icon-edit" title="수정" onclick="openPartnerModal('${p.id}')">✎</button>
+        <button class="icon-del" title="삭제" onclick="deletePartner('${p.id}')">×</button>
+      </div>
+    </div>`).join('')
+  : `<div class="empty">${q ? '검색 결과가 없습니다.' : '등록된 협력업체가 없습니다. 우측 상단 ＋ 업체 등록을 눌러 추가하세요.'}</div>`;
+}
+$('#partner-search').addEventListener('input', renderPartners);
+$('#partner-cats').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if(!c) return;
+  $$('#partner-cats .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); partnerCat = c.dataset.c; renderPartners();
+});
+
+/* 협력업체 등록/수정 모달 */
+function openPartnerModal(id){
+  const p = id ? PARTNERS.find(x=>x.id===id) : null;
+  const isEdit = !!p;
+  const opts = PARTNER_CATS.map(c=>{
+    const sel = (p && p.catId===c.id) || (!p && partnerCat!=='all' && partnerCat===c.id);
+    return `<option value="${c.id}"${sel?' selected':''}>${esc(c.name)}</option>`;
+  }).join('');
+  modalCard.innerHTML = `
+    <h3>${isEdit?'협력업체 수정':'협력업체 등록'}</h3>
+    <div class="modal-row">
+      <div class="field"><label>업체명</label><input type="text" id="p-name" value="${isEdit?esc(p.name):''}" placeholder="예) 가나음향"></div>
+      <div class="field"><label>분야</label><select id="p-cat">${opts||'<option value="">(분야 없음)</option>'}</select></div>
+    </div>
+    <div class="modal-row">
+      <div class="field"><label>담당자</label><input type="text" id="p-manager" value="${isEdit?esc(p.manager||''):''}" placeholder="예) 홍길동 부장"></div>
+      <div class="field"><label>연락처</label><input type="text" id="p-phone" value="${isEdit?esc(p.phone||''):''}" placeholder="예) 010-1234-5678"></div>
+    </div>
+    <div class="field"><label>이메일</label><input type="text" id="p-email" value="${isEdit?esc(p.email||''):''}" placeholder="예) contact@company.com"></div>
+    <div class="field"><label>비고</label><textarea id="p-memo" placeholder="단가·거래조건·특이사항 등">${isEdit?esc(p.memo||''):''}</textarea></div>
+    <div class="modal-actions">
+      ${isEdit?`<button class="btn-cancel" style="flex:0 0 auto;color:var(--coral)" onclick="delPartnerFromModal('${p.id}')">삭제</button>`:''}
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-save" onclick="submitPartner(${isEdit?`'${p.id}'`:'null'})">${isEdit?'저장':'등록'}</button>
+    </div>`;
+  modalBack.classList.add('open'); setTimeout(()=>$('#p-name').focus(),50);
+}
+$('#add-partner-btn').addEventListener('click', () => {
+  if(!PARTNER_CATS.length){ toast('먼저 분야를 추가해 주세요.', true); openCatManager(); return; }
+  openPartnerModal(null);
+});
+async function submitPartner(id){
+  const name = $('#p-name').value.trim();
+  if(!name){ toast('업체명을 입력해 주세요.', true); return; }
+  const body = {name, catId:$('#p-cat').value, manager:$('#p-manager').value.trim(),
+    phone:$('#p-phone').value.trim(), email:$('#p-email').value.trim(), memo:$('#p-memo').value.trim()};
+  try{
+    if(id){ await api('/partners/'+id,{method:'PUT', body}); toast('협력업체를 수정했습니다.'); }
+    else  { await api('/partners',{method:'POST', body}); toast('협력업체를 등록했습니다.'); }
+    closeModal(); await loadPartners();
+  }catch(err){ toast(err.message,true); }
+}
+function delPartnerFromModal(id){ if(confirm('이 협력업체를 삭제할까요?')){ closeModal(); deletePartner(id, true); } }
+async function deletePartner(id, skipConfirm){
+  if(!skipConfirm && !confirm('이 협력업체를 삭제할까요?')) return;
+  try{ await api('/partners/'+id,{method:'DELETE'}); toast('협력업체를 삭제했습니다.'); await loadPartners(); }
+  catch(err){ toast(err.message,true); }
+}
+
+/* 분야 관리 모달 */
+function openCatManager(){
+  const rows = PARTNER_CATS.map(c=>`
+    <div class="cat-manage-row">
+      <input type="text" value="${esc(c.name)}" data-cat-input="${c.id}">
+      <button class="ubtn" onclick="renamePartnerCat('${c.id}')">저장</button>
+      <button class="icon-del" title="삭제" onclick="deletePartnerCat('${c.id}')">×</button>
+    </div>`).join('');
+  modalCard.innerHTML = `
+    <h3>분야 관리</h3>
+    <p style="font-size:.78rem;color:#8AA39D;margin-bottom:12px">협력업체 분야를 추가하거나 이름을 바꾸고 삭제할 수 있습니다.</p>
+    <div id="cat-manage-list">${rows || '<div class="empty" style="padding:14px">아직 등록된 분야가 없습니다.</div>'}</div>
+    <div class="cat-manage-row" style="margin-top:10px">
+      <input type="text" id="new-cat-name" placeholder="새 분야 이름 (예) 영상">
+      <button class="btn-save" style="flex:0 0 auto;padding:9px 16px" onclick="addPartnerCat()">추가</button>
+    </div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">닫기</button></div>`;
+  modalBack.classList.add('open');
+}
+$('#manage-cats-btn').addEventListener('click', openCatManager);
+async function addPartnerCat(){
+  const name = $('#new-cat-name').value.trim();
+  if(!name){ toast('분야 이름을 입력해 주세요.', true); return; }
+  try{ await api('/partner-cats',{method:'POST', body:{name, order:PARTNER_CATS.length}});
+    toast('분야를 추가했습니다.'); await loadPartners(); openCatManager();
+  }catch(err){ toast(err.message,true); }
+}
+async function renamePartnerCat(id){
+  const el = document.querySelector('[data-cat-input="'+id+'"]');
+  const name = el ? el.value.trim() : '';
+  if(!name){ toast('분야 이름을 입력해 주세요.', true); return; }
+  try{ await api('/partner-cats/'+id,{method:'PUT', body:{name}});
+    toast('분야 이름을 변경했습니다.'); await loadPartners(); openCatManager();
+  }catch(err){ toast(err.message,true); }
+}
+async function deletePartnerCat(id){
+  const used = PARTNERS.filter(p=>p.catId===id).length;
+  if(!confirm(used?`이 분야에 ${used}개 업체가 연결돼 있습니다. 삭제하면 해당 업체는 '미분류'로 표시됩니다. 계속할까요?`:'이 분야를 삭제할까요?')) return;
+  try{
+    await api('/partner-cats/'+id,{method:'DELETE'});
+    if(partnerCat===id) partnerCat='all';
+    toast('분야를 삭제했습니다.'); await loadPartners(); openCatManager();
+  }catch(err){ toast(err.message,true); }
+}
 
 /* ── 직원 관리 (관리자 전용) ── */
 let USERS = [];
