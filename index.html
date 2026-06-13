@@ -1027,6 +1027,24 @@ async function loadPartners(){
   }catch(err){ /* 비로그인 등은 조용히 무시 */ }
 }
 const catName = id => { const c = PARTNER_CATS.find(x=>x.id===id); return c ? c.name : '미분류'; };
+/* 전화번호 표시용 하이픈 자동 삽입 (저장값과 무관) */
+function fmtPhone(raw){
+  const s = (raw||'').trim();
+  const d = s.replace(/[^\d]/g,'');
+  if(!d) return s;
+  if(d.startsWith('02')){
+    if(d.length===9)  return d.replace(/(\d{2})(\d{3})(\d{4})/,'$1-$2-$3');
+    if(d.length===10) return d.replace(/(\d{2})(\d{4})(\d{4})/,'$1-$2-$3');
+  }
+  if(/^(010|011|016|017|018|019)/.test(d)){
+    if(d.length===11) return d.replace(/(\d{3})(\d{4})(\d{4})/,'$1-$2-$3');
+    if(d.length===10) return d.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3');
+  }
+  if(/^1\d{3}/.test(d) && d.length===8) return d.replace(/(\d{4})(\d{4})/,'$1-$2');
+  if(d.length===11) return d.replace(/(\d{3})(\d{4})(\d{4})/,'$1-$2-$3');
+  if(d.length===10) return d.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3');
+  return s;
+}
 /* 메모는 항상 서술형 텍스트로만 표시 */
 function partnerTags(memo){
   return {label:'', tags:[], plain:(memo||'').trim()};
@@ -1056,7 +1074,7 @@ function renderPartners(){
         <div class="pcontact">
           ${p.manager?`<span class="pman">${esc(p.manager)}</span>`:''}
           ${p.manager&&p.phone?`<span class="dot">·</span>`:''}
-          ${p.phone?`<a href="tel:${esc(p.phone)}">${esc(p.phone)}</a>`:''}
+          ${p.phone?`<a href="tel:${esc(p.phone)}">${esc(fmtPhone(p.phone))}</a>`:''}
           ${(p.manager||p.phone)&&p.email?`<span class="dot">·</span>`:''}
           ${p.email?`<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>`:''}
         </div>
