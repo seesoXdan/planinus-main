@@ -29,6 +29,7 @@
   firebase.initializeApp(window.__FIREBASE_CONFIG__);
   var auth = firebase.auth();
   var db = firebase.firestore();
+  var storage = (firebase.storage ? firebase.storage() : null);
 
   // 브라우저에 로그인 상태 유지(새로고침해도 세션 유지)
   try { auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch (e) {}
@@ -163,6 +164,26 @@
           return ERR('현재 비밀번호가 올바르지 않습니다.');
         return ERR('비밀번호 변경 중 오류가 발생했습니다.');
       }
+    }
+
+    /* ===== 앱 설정(settings/integrations) =====
+       Gemini API 키 등 외부 연동 키 보관.
+       - 읽기: 로그인한 직원(브라우저에서 AI 호출에 사용)
+       - 쓰기: 관리자만
+       공개 저장소(GitHub Pages)에 키를 올리지 않기 위해 여기(Firestore)에 둔다. */
+    if (path === '/settings' && method === 'GET') {
+      await requireUser();
+      var st = await db.collection('settings').doc('integrations').get();
+      var sd = st.exists ? st.data() : {};
+      return J({ geminiKey: sd.geminiKey || '' });
+    }
+    if (path === '/settings' && method === 'PUT') {
+      await requireAdmin();
+      var sb = jsonBody || {};
+      var supd = {};
+      if (sb.geminiKey != null) supd.geminiKey = String(sb.geminiKey).trim();
+      await db.collection('settings').doc('integrations').set(supd, { merge: true });
+      return J({ ok: true });
     }
 
     /* ===== 직원 관리(관리자 전용) ===== */
@@ -444,7 +465,10 @@
       return J(pa.map(function (p) {
         return {
           id: p.id, name: p.name, catId: p.catId || '',
-          manager: p.manager || '', phone: p.phone || '', email: p.email || '', memo: p.memo || ''
+          role: p.role || '', manager: p.manager || '', phone: p.phone || '',
+          email: p.email || '', homepage: p.homepage || '', bizno: p.bizno || '',
+          addr: p.addr || '', tax: p.tax || '', account: p.account || '',
+          memo: p.memo || '', files: p.files || {}
         };
       }));
     }
@@ -452,12 +476,15 @@
       var ptm = await requireUser();
       var ptb = jsonBody || {};
       if (!ptb.name || !String(ptb.name).trim()) return ERR('업체명을 입력해 주세요.');
-      var ptdoc = {
+      var ptdoc = clean({
         name: String(ptb.name).trim(), catId: ptb.catId || '',
-        manager: String(ptb.manager || '').trim(), phone: String(ptb.phone || '').trim(),
-        email: String(ptb.email || '').trim(), memo: String(ptb.memo || '').trim(),
-        created_by: ptm.id, created_at: nowStr()
-      };
+        role: String(ptb.role || '').trim(), manager: String(ptb.manager || '').trim(),
+        phone: String(ptb.phone || '').trim(), email: String(ptb.email || '').trim(),
+        homepage: String(ptb.homepage || '').trim(), bizno: String(ptb.bizno || '').trim(),
+        addr: String(ptb.addr || '').trim(), tax: String(ptb.tax || '').trim(),
+        account: String(ptb.account || '').trim(), memo: String(ptb.memo || '').trim(),
+        files: ptb.files || {}, created_by: ptm.id, created_at: nowStr()
+      });
       var ptref = await db.collection('partners').add(ptdoc);
       ptdoc.id = ptref.id;
       return J(ptdoc);
@@ -466,11 +493,15 @@
     if (mPt && method === 'PUT') {
       await requireUser();
       var ptu = jsonBody || {};
-      var ptup = {
+      var ptup = clean({
         name: String(ptu.name || '').trim(), catId: ptu.catId || '',
-        manager: String(ptu.manager || '').trim(), phone: String(ptu.phone || '').trim(),
-        email: String(ptu.email || '').trim(), memo: String(ptu.memo || '').trim()
-      };
+        role: String(ptu.role || '').trim(), manager: String(ptu.manager || '').trim(),
+        phone: String(ptu.phone || '').trim(), email: String(ptu.email || '').trim(),
+        homepage: String(ptu.homepage || '').trim(), bizno: String(ptu.bizno || '').trim(),
+        addr: String(ptu.addr || '').trim(), tax: String(ptu.tax || '').trim(),
+        account: String(ptu.account || '').trim(), memo: String(ptu.memo || '').trim(),
+        files: ptu.files || {}
+      });
       await db.collection('partners').doc(mPt[1]).update(ptup);
       ptup.id = mPt[1];
       return J(ptup);
@@ -520,6 +551,6 @@
     });
   };
 
-  // 디버깅용 핸들 노출
-  window.__planinusFirebase = { auth: auth, db: db, authReady: authReady };
+  // 디버깅용 핸들 노출 (storage = 협력업체 첨부파일 업로드에 사용)
+  window.__planinusFirebase = { auth: auth, db: db, storage: storage, authReady: authReady };
 })();

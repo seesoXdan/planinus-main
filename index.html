@@ -400,6 +400,88 @@ body:has(#page-quote.active) .main{max-width:1280px}
 .cat-manage-row input{flex:1}
 .cat-manage-row .ubtn{flex:0 0 auto}
 
+/* ── 협력업체 카드(클릭형) ── */
+.pcard{cursor:pointer;transition:.14s}
+.pcard:hover{border-color:var(--teal-soft);transform:translateY(-2px);box-shadow:0 8px 22px rgba(22,51,46,.10)}
+.pava{min-width:50px;height:40px;padding:0 11px;border-radius:10px;background:#D7EBE4;color:var(--teal-deep);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.78rem;line-height:1.1;text-align:center}
+.prole{font-size:.74rem;color:#8AA39D;background:#fff;border:1px solid var(--line);padding:2px 9px;border-radius:99px}
+.open-hint{font-size:.74rem;font-weight:700;color:var(--teal)}
+.pcard-body{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pfiles{display:flex;gap:7px;flex-wrap:wrap}
+.fbadge{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#9DB3AE}
+.fbadge.has{background:#EAF4F1;border-color:#CDE6DE;color:var(--teal-deep)}
+
+/* ── 협력업체 상세보기/수정 모달(넓게) ── */
+.modal-card.pwide{max-width:680px;max-height:90vh;overflow-y:auto;padding:0}
+.dt-head{display:flex;align-items:flex-start;gap:14px;padding:22px 26px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;border-radius:18px 18px 0 0;z-index:2}
+.dt-ava{min-width:60px;height:54px;padding:0 13px;border-radius:14px;background:#D7EBE4;color:var(--teal-deep);font-weight:700;font-size:.92rem;line-height:1.15;text-align:center;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dt-titlewrap{flex:1;min-width:0}
+.dt-titlewrap .row1{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.dt-titlewrap h3{font-size:1.25rem;font-weight:700;color:var(--teal-deep);margin:0}
+.dt-titlewrap .sub{font-size:.82rem;color:#8AA39D;margin-top:3px}
+.dt-headacts{display:flex;gap:8px;flex-shrink:0}
+.iconbtn{width:34px;height:34px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#6E8983;font-size:1rem;display:flex;align-items:center;justify-content:center}
+.iconbtn:hover{background:#F2F8F6;color:var(--teal-deep)}
+.tbtn{border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--teal-deep);font-size:.83rem;font-weight:600;padding:0 14px;height:34px}
+.tbtn.solid{background:var(--teal);color:#fff;border-color:var(--teal)}
+.tbtn.solid:hover{background:var(--teal-deep)}
+.dt-body{padding:8px 26px 24px}
+.dt-sec{margin-top:20px}
+.dt-sec h4{font-size:.78rem;font-weight:700;color:var(--teal);letter-spacing:.03em;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.dt-sec h4:before{content:"";width:4px;height:14px;background:var(--teal);border-radius:2px}
+.dl{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:max-content;align-content:start;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.dl .it{background:#fff;padding:12px 16px;align-self:stretch}
+.dl .it.full{grid-column:1/-1}
+.dl .it .k{font-size:.74rem;color:#9DB3AE;font-weight:600;margin-bottom:4px}
+.dl .it .v{font-size:.92rem;color:var(--ink);font-weight:500;overflow-wrap:break-word}
+.dl .it .v a{color:var(--teal);text-decoration:none}
+.dl .it .v.na,.dl .it .na{color:#C4D3CE;font-weight:400}
+.taxpill{display:inline-block;font-size:.74rem;font-weight:700;padding:3px 11px;border-radius:99px;background:#FCEFD6;color:#9A6B14}
+.taxpill.free{background:#E7F3EE;color:var(--teal-deep)}
+.taxpill.freelancer{background:#EEF0FB;color:#4B53A8}
+.filelist{display:flex;flex-direction:column;gap:9px}
+.filerow{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:11px;padding:11px 14px;background:#fff}
+.filerow .fic{width:40px;height:40px;border-radius:9px;background:#EAF4F1;color:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.7rem;flex-shrink:0}
+.filerow .fmeta{flex:1;min-width:0}
+.filerow .fmeta b{display:block;font-size:.86rem;font-weight:600}
+.filerow .fmeta span{font-size:.74rem;color:#9DB3AE;word-break:break-all}
+.filerow .fmeta span.none{color:#C4D3CE}
+.filerow .fdl{font-size:.78rem;font-weight:700;color:var(--teal);border:1px solid var(--line);border-radius:8px;padding:6px 12px;background:#fff;flex-shrink:0}
+.filerow .fdl.muted{color:#C4D3CE;cursor:default}
+/* 수정 모드 */
+.seg{display:flex;gap:8px}
+.seg label{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:10px;text-align:center;font-size:.86rem;font-weight:600;color:#6E8983;cursor:pointer;background:#FBFDFC}
+.seg input{display:none;width:auto}
+.seg label:has(input:checked){border-color:var(--teal);background:#EAF4F1;color:var(--teal-deep)}
+.field.ai-filled input,.field.ai-filled select{border-color:#7FCBB4;background:#F2FBF7}
+.ai-tag{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;color:var(--teal);margin-left:6px;opacity:0;transition:.3s}
+.ai-filled .ai-tag{opacity:1}
+.upzone{border:1.6px dashed #BFD8D1;border-radius:13px;background:#F7FBFA;padding:16px}
+.upzone .uptop{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.upzone .upic{width:42px;height:42px;border-radius:11px;background:#EAF4F1;color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.upzone .uptxt{flex:1;min-width:140px}
+.upzone .uptxt b{display:block;font-size:.9rem;color:var(--teal-deep);word-break:break-all}
+.upzone .uptxt span{font-size:.76rem;color:#8AA39D}
+.upbtns{display:flex;gap:8px;flex-shrink:0}
+.ubtn{border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--teal-deep);font-size:.8rem;font-weight:600;padding:9px 14px}
+.ubtn.ai{background:var(--teal);color:#fff;border-color:var(--teal);display:inline-flex;align-items:center;gap:6px}
+.ubtn.ai:hover{background:var(--teal-deep)}
+.ubtn:disabled{opacity:.6;cursor:default}
+.ai-status{margin-top:11px;font-size:.82rem;color:var(--teal-deep);display:none;align-items:center;gap:9px;background:#fff;border:1px solid #CDE6DE;border-radius:9px;padding:10px 13px}
+.ai-status.show{display:flex}
+.ai-status.done{background:#F2FBF7;border-color:#7FCBB4}
+.ai-status.err{background:#FBEEEC;border-color:#F0CBC5;color:#A8493C}
+.spinner{width:16px;height:16px;border:2.4px solid #CDE6DE;border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.upslot{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin-bottom:9px;background:#fff}
+.upslot .fic{width:38px;height:38px;border-radius:9px;background:#F2F8F6;color:#9DB3AE;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:700;flex-shrink:0}
+.upslot.has .fic{background:#EAF4F1;color:var(--teal)}
+.upslot .fmeta{flex:1;min-width:0}
+.upslot .fmeta b{display:block;font-size:.84rem;font-weight:600}
+.upslot .fmeta span{font-size:.73rem;color:#9DB3AE;word-break:break-all}
+.upslot .delx{border:none;background:none;color:#C99;font-size:1rem;flex-shrink:0}
+.btn-del{flex:0 0 auto!important;background:#fff;border:1px solid #F0D2CE;color:var(--coral)}
+
 /* ───────── 직원 관리 ───────── */
 .nav-badge{
   margin-left:auto;background:var(--coral);color:#fff;font-size:.66rem;font-weight:700;
@@ -679,6 +761,9 @@ body:has(#page-quote.active) .main{max-width:1280px}
       <section class="page" id="page-users">
         <div class="page-head">
           <div><h1>직원 관리</h1><p>가입 신청을 승인하고 직원 계정·권한을 관리합니다.</p></div>
+          <div class="ph-actions">
+            <button class="btn-add ghost" id="ai-key-btn">AI 분석 키 설정</button>
+          </div>
         </div>
         <div class="card" id="users-list"></div>
       </section>
@@ -695,6 +780,7 @@ body:has(#page-quote.active) .main{max-width:1280px}
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="firebase-api.js"></script>
 
@@ -710,6 +796,7 @@ let TOKEN = localStorage.getItem('planinus_token') || '';
 let ME = null;
 let EVENTS = [], NOTICES = [], FILES = [];
 let PARTNERS = [], PARTNER_CATS = [], partnerCat = 'all';
+let APP_SETTINGS = {};   // 외부 연동 키 등 (Firestore settings/integrations)
 
 const CAT_LABEL = {company:'회사 일정', event:'행사 일정', deadline:'마감', off:'휴가·휴무'};
 const ICON = {pdf:'PDF', doc:'DOC', xls:'XLS', zip:'ZIP', ppt:'PPT'};
@@ -859,6 +946,7 @@ async function loadAll(){
     EVENTS = ev; NOTICES = no; FILES = fi;
     renderDash(); renderCal(); renderLib(); renderNotices();
     loadPartners();
+    api('/settings').then(s => { APP_SETTINGS = s || {}; }).catch(()=>{});
   }catch(err){ toast(err.message, true); }
 }
 
@@ -1054,31 +1142,47 @@ function renderPartnerCats(){
     .concat(PARTNER_CATS.map(c=>`<button class="chip${partnerCat===c.id?' on':''}" data-c="${c.id}">${esc(c.name)}</button>`));
   $('#partner-cats').innerHTML = html.join('');
 }
+const FILE_DEFS = {biz:'사업자등록증', bank:'통장사본', quote:'견적서'};
+const FILE_ICON = {biz:'사업자', bank:'통장', quote:'견적'};
+const ROLES = ['담당','대표','이사','부장','과장','프리랜서'];
+let partnerFiles = {};       // 현재 모달의 첨부 {biz:{name,url,path},...}
+let partnerBizFile = null;   // AI 분석용 사업자등록증 File 객체
+let partnerScope = 'new';    // Storage 경로용 (수정 시 partnerId, 신규는 임시 id)
+// 견적서는 누적(여러 개) 저장 → 항상 배열로 다룬다. (예전 단일 객체도 호환)
+function normalizeQuotes(v){ if(!v) return []; return Array.isArray(v) ? v.slice() : [v]; }
+
 function renderPartners(){
   const q = $('#partner-search').value.trim().toLowerCase();
   const list = PARTNERS.filter(p =>
     (partnerCat==='all' || p.catId===partnerCat) &&
-    (!q || `${p.name} ${p.manager||''} ${p.phone||''} ${p.email||''}`.toLowerCase().includes(q)));
+    (!q || `${p.name} ${p.manager||''} ${p.phone||''} ${p.email||''} ${p.role||''} ${p.bizno||''}`.toLowerCase().includes(q)));
   $('#partner-list').innerHTML = list.length ? list.map(p => {
-    const t = partnerTags(p.memo);
+    const pf = p.files||{};
+    const fb = Object.keys(FILE_DEFS).map(k=>{
+      let has, label = FILE_DEFS[k];
+      if(k==='quote'){ const n = normalizeQuotes(pf.quote).length; has = n>0; if(has) label = '견적서 '+n; }
+      else has = !!pf[k];
+      return `<span class="fbadge${has?' has':''}">${has?'✓ ':''}${label}</span>`;
+    }).join('');
     return `
-    <div class="pcard">
+    <div class="pcard" onclick="openPartnerView('${p.id}')">
       <div class="pcard-head">
-        <div class="ptitle"><b>${esc(p.name)}</b><span class="badge field">${esc(catName(p.catId))}</span></div>
-        <div class="pacts">
-          <button class="icon-edit" title="수정" onclick="openPartnerModal('${p.id}')">✎</button>
-          <button class="icon-del" title="삭제" onclick="deletePartner('${p.id}')">×</button>
+        <div class="ptitle">
+          <div class="pava">${esc(catName(p.catId))}</div>
+          <b>${esc(p.name)}</b>
+          ${p.role?`<span class="prole">${esc(p.role)}</span>`:''}
         </div>
+        <div class="pacts"><span class="open-hint">상세보기 ›</span></div>
       </div>
       <div class="pcard-body">
         <div class="pcontact">
           ${p.manager?`<span class="pman">${esc(p.manager)}</span>`:''}
           ${p.manager&&p.phone?`<span class="dot">·</span>`:''}
-          ${p.phone?`<a href="tel:${esc(p.phone)}">${esc(fmtPhone(p.phone))}</a>`:''}
+          ${p.phone?`<a href="tel:${esc(p.phone)}" onclick="event.stopPropagation()">${esc(fmtPhone(p.phone))}</a>`:''}
           ${(p.manager||p.phone)&&p.email?`<span class="dot">·</span>`:''}
-          ${p.email?`<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>`:''}
+          ${p.email?`<a href="mailto:${esc(p.email)}" onclick="event.stopPropagation()">${esc(p.email)}</a>`:''}
         </div>
-        ${t.plain?`<div class="pmemo">${esc(t.plain).replace(/\n/g,'<br>')}</div>`:''}
+        <div class="pfiles">${fb}</div>
       </div>
     </div>`;
   }).join('')
@@ -1091,42 +1195,355 @@ $('#partner-cats').addEventListener('click', e => {
   c.classList.add('on'); partnerCat = c.dataset.c; renderPartners();
 });
 
+/* 협력업체 상세보기(읽기 전용) */
+const taxClass = t => t==='비과세'?'free':(t==='프리랜서'?'freelancer':'');
+function pvItem(k,v,full){
+  return `<div class="it${full?' full':''}"><div class="k">${k}</div><div class="v${v?'':' na'}">${v||'—'}</div></div>`;
+}
+function openPartnerView(id){
+  const p = PARTNERS.find(x=>x.id===id); if(!p) return;
+  const pf = p.files||{};
+  const fileRow = (icon,label,f)=>`<div class="filerow">
+      <div class="fic">${icon}</div>
+      <div class="fmeta"><b>${label}</b><span class="${f?'':'none'}">${f?esc(f.name):'미등록'}</span></div>
+      ${f?`<a class="fdl" href="${esc(f.url)}" target="_blank" rel="noopener">다운로드</a>`:`<button class="fdl muted" disabled>없음</button>`}
+    </div>`;
+  let files = fileRow(FILE_ICON.biz, FILE_DEFS.biz, pf.biz) + fileRow(FILE_ICON.bank, FILE_DEFS.bank, pf.bank);
+  const qs = normalizeQuotes(pf.quote);
+  files += qs.length
+    ? qs.map((f,i)=>fileRow(FILE_ICON.quote, '견적서 '+(i+1), f)).join('')
+    : fileRow(FILE_ICON.quote, '견적서', null);
+  modalCard.classList.add('pwide');
+  modalCard.innerHTML = `
+    <div class="dt-head">
+      <div class="dt-ava">${esc(catName(p.catId))}</div>
+      <div class="dt-titlewrap">
+        <div class="row1"><h3>${esc(p.name)}</h3>${p.role?`<span class="prole">${esc(p.role)}</span>`:''}</div>
+        <div class="sub">${esc(p.manager||'')}${p.manager&&p.phone?' · ':''}${esc(fmtPhone(p.phone||''))}</div>
+      </div>
+      <div class="dt-headacts">
+        <button class="tbtn solid" onclick="openPartnerModal('${p.id}')">✎ 수정</button>
+        <button class="iconbtn" title="닫기" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="dt-body">
+      <div class="dt-sec"><h4>기본 정보</h4>
+        <div class="dl">
+          ${pvItem('구분(분야)', esc(catName(p.catId)))}
+          ${pvItem('직책', esc(p.role||''))}
+          ${pvItem('업체명', esc(p.name))}
+          ${pvItem('대표자 / 담당자', esc(p.manager||''))}
+          ${pvItem('연락처', p.phone?`<a href="tel:${esc(p.phone)}">${esc(fmtPhone(p.phone))}</a>`:'')}
+          ${pvItem('이메일', p.email?`<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>`:'')}
+          ${pvItem('홈페이지', p.homepage?`<a href="${esc(p.homepage)}" target="_blank" rel="noopener">${esc(p.homepage)}</a>`:'', true)}
+        </div>
+      </div>
+      <div class="dt-sec"><h4>사업자 정보</h4>
+        <div class="dl">
+          ${pvItem('사업자등록번호', esc(p.bizno||''))}
+          <div class="it"><div class="k">과세 구분</div><div class="v">${p.tax?`<span class="taxpill ${taxClass(p.tax)}">${esc(p.tax)}</span>`:'<span class="na">—</span>'}</div></div>
+          ${pvItem('소재지', esc(p.addr||''), true)}
+          ${pvItem('계좌번호', esc(p.account||''), true)}
+        </div>
+      </div>
+      <div class="dt-sec"><h4>첨부 파일</h4><div class="filelist">${files}</div></div>
+      ${p.memo?`<div class="dt-sec"><h4>비고</h4><div class="dl"><div class="it full"><div class="v">${esc(p.memo).replace(/\n/g,'<br>')}</div></div></div></div>`:''}
+    </div>`;
+  modalBack.classList.add('open');
+}
+
 /* 협력업체 등록/수정 모달 */
+function catOptions(cur){
+  const opts = PARTNER_CATS.map(c=>`<option value="${c.id}"${cur===c.id?' selected':''}>${esc(c.name)}</option>`).join('');
+  return opts || '<option value="">(분야 없음)</option>';
+}
+function roleOptions(cur){
+  let list = ROLES.slice(); if(cur && list.indexOf(cur)<0) list.unshift(cur);
+  return list.map(r=>`<option${cur===r?' selected':''}>${esc(r)}</option>`).join('');
+}
+function fileSlot(k){
+  const f = partnerFiles[k];
+  return `<div class="upslot${f?' has':''}" data-slot="${k}">
+    <div class="fic">${FILE_ICON[k]}</div>
+    <div class="fmeta"><b>${FILE_DEFS[k]}</b><span>${f?esc(f.name):'PDF·이미지 첨부 가능'}</span></div>
+    <button class="ubtn" type="button" onclick="document.getElementById('file-${k}').click()">파일 선택</button>
+    <button class="delx" type="button" title="제거" onclick="removePartnerFile('${k}')" style="display:${f?'block':'none'}">×</button>
+    <input type="file" id="file-${k}" hidden accept="image/*,application/pdf" onchange="uploadPartnerFile('${k}',this)">
+  </div>`;
+}
 function openPartnerModal(id){
   const p = id ? PARTNERS.find(x=>x.id===id) : null;
   const isEdit = !!p;
-  const opts = PARTNER_CATS.map(c=>{
-    const sel = (p && p.catId===c.id) || (!p && partnerCat!=='all' && partnerCat===c.id);
-    return `<option value="${c.id}"${sel?' selected':''}>${esc(c.name)}</option>`;
-  }).join('');
+  partnerFiles = isEdit ? Object.assign({}, p.files||{}) : {};
+  partnerFiles.quote = normalizeQuotes(partnerFiles.quote);  // 견적서는 항상 배열(누적)
+  partnerBizFile = null;
+  partnerScope = id || ('tmp-'+Date.now());
+  const defCat = (p && p.catId) || (partnerCat!=='all' ? partnerCat : '');
+  const tax = (p && p.tax) || '과세';
+  const taxSeg = ['과세','비과세','프리랜서'].map(t=>
+    `<label><input type="radio" name="ptax" value="${t}"${tax===t?' checked':''}><span>${t}</span></label>`).join('');
+  modalCard.classList.add('pwide');
   modalCard.innerHTML = `
-    <h3>${isEdit?'협력업체 수정':'협력업체 등록'}</h3>
-    <div class="modal-row">
-      <div class="field"><label>업체명</label><input type="text" id="p-name" value="${isEdit?esc(p.name):''}" placeholder="예) 가나음향"></div>
-      <div class="field"><label>분야</label><select id="p-cat">${opts||'<option value="">(분야 없음)</option>'}</select></div>
+    <div class="dt-head">
+      <div class="dt-ava">${isEdit?esc(catName(p.catId)):'＋'}</div>
+      <div class="dt-titlewrap"><div class="row1"><h3>${isEdit?'협력업체 수정':'협력업체 등록'}</h3></div>
+        <div class="sub">사업자등록증을 올리면 AI가 기본 정보를 채워줍니다.</div></div>
+      <div class="dt-headacts"><button class="iconbtn" title="닫기" onclick="${isEdit?`openPartnerView('${p.id}')`:'closeModal()'}">✕</button></div>
     </div>
-    <div class="modal-row">
-      <div class="field"><label>담당자</label><input type="text" id="p-manager" value="${isEdit?esc(p.manager||''):''}" placeholder="예) 홍길동 부장"></div>
-      <div class="field"><label>연락처</label><input type="text" id="p-phone" value="${isEdit?esc(p.phone||''):''}" placeholder="예) 010-1234-5678"></div>
-    </div>
-    <div class="field"><label>이메일</label><input type="text" id="p-email" value="${isEdit?esc(p.email||''):''}" placeholder="예) contact@company.com"></div>
-    <div class="field"><label>비고</label><textarea id="p-memo" placeholder="단가·거래조건·특이사항 등">${isEdit?esc(p.memo||''):''}</textarea></div>
-    <div class="modal-actions">
-      ${isEdit?`<button class="btn-cancel" style="flex:0 0 auto;color:var(--coral)" onclick="delPartnerFromModal('${p.id}')">삭제</button>`:''}
-      <button class="btn-cancel" onclick="closeModal()">취소</button>
-      <button class="btn-save" onclick="submitPartner(${isEdit?`'${p.id}'`:'null'})">${isEdit?'저장':'등록'}</button>
+    <div class="dt-body">
+      <div class="dt-sec"><h4>사업자등록증 AI 분석</h4>
+        <div class="upzone">
+          <div class="uptop">
+            <div class="upic">📄</div>
+            <div class="uptxt"><b id="biz-name">${partnerFiles.biz?esc(partnerFiles.biz.name):'사업자등록증 파일을 선택하세요'}</b>
+              <span>PDF·JPG·PNG · 업로드 후 “AI 분석”을 누르면 아래 항목이 자동 입력됩니다</span></div>
+            <div class="upbtns">
+              <button class="ubtn" type="button" onclick="document.getElementById('file-biz').click()">파일 선택</button>
+              <button class="ubtn ai" type="button" id="ai-btn" onclick="analyzePartnerBiz()">✨ AI 분석</button>
+            </div>
+          </div>
+          <input type="file" id="file-biz" hidden accept="image/*,application/pdf" onchange="uploadPartnerFile('biz',this)">
+          <div class="ai-status" id="ai-status"></div>
+        </div>
+      </div>
+
+      <div class="dt-sec"><h4>기본 정보</h4>
+        <div class="modal-row">
+          <div class="field"><label>구분(분야)</label><select id="p-cat">${catOptions(defCat)}</select></div>
+          <div class="field"><label>직책</label><select id="p-role">${roleOptions(p&&p.role)}</select></div>
+        </div>
+        <div class="modal-row">
+          <div class="field" id="wrap-name"><label>업체명<span class="ai-tag">✨AI</span></label>
+            <input type="text" id="p-name" value="${isEdit?esc(p.name):''}" placeholder="예) 가나음향"></div>
+          <div class="field" id="wrap-manager"><label>대표자 / 담당자<span class="ai-tag">✨AI</span></label>
+            <input type="text" id="p-manager" value="${isEdit?esc(p.manager||''):''}" placeholder="예) 홍길동"></div>
+        </div>
+        <div class="modal-row">
+          <div class="field"><label>연락처</label><input type="text" id="p-phone" value="${isEdit?esc(p.phone||''):''}" placeholder="예) 010-1234-5678"></div>
+          <div class="field"><label>이메일</label><input type="text" id="p-email" value="${isEdit?esc(p.email||''):''}" placeholder="예) contact@company.com"></div>
+        </div>
+        <div class="field"><label>홈페이지</label><input type="text" id="p-home" value="${isEdit?esc(p.homepage||''):''}" placeholder="예) https://company.co.kr"></div>
+      </div>
+
+      <div class="dt-sec"><h4>사업자 정보</h4>
+        <div class="field" id="wrap-bizno"><label>사업자등록번호<span class="ai-tag">✨AI</span></label>
+          <input type="text" id="p-bizno" value="${isEdit?esc(p.bizno||''):''}" placeholder="예) 123-45-67890"></div>
+        <div class="field" id="wrap-addr"><label>소재지<span class="ai-tag">✨AI</span></label>
+          <input type="text" id="p-addr" value="${isEdit?esc(p.addr||''):''}" placeholder="사업장 주소"></div>
+        <div class="field"><label>과세 구분</label><div class="seg">${taxSeg}</div></div>
+        <div class="field"><label>계좌번호</label><input type="text" id="p-account" value="${isEdit?esc(p.account||''):''}" placeholder="예) 국민 123456-04-567890"></div>
+      </div>
+
+      <div class="dt-sec"><h4>그 외 첨부 파일</h4>${fileSlot('bank')}${quoteBlock()}</div>
+      <div class="dt-sec"><h4>비고</h4>
+        <div class="field"><textarea id="p-memo" placeholder="단가·거래조건·특이사항 등">${isEdit?esc(p.memo||''):''}</textarea></div></div>
+
+      <div class="modal-actions">
+        ${isEdit?`<button class="btn-del" onclick="delPartnerFromModal('${p.id}')">삭제</button>`:''}
+        <button class="btn-cancel" onclick="${isEdit?`openPartnerView('${p.id}')`:'closeModal()'}">취소</button>
+        <button class="btn-save" onclick="submitPartner(${isEdit?`'${p.id}'`:'null'})">${isEdit?'저장':'등록'}</button>
+      </div>
     </div>`;
-  modalBack.classList.add('open'); setTimeout(()=>$('#p-name').focus(),50);
+  modalBack.classList.add('open'); setTimeout(()=>$('#p-name') && $('#p-name').focus(),60);
 }
 $('#add-partner-btn').addEventListener('click', () => {
   if(!PARTNER_CATS.length){ toast('먼저 분야를 추가해 주세요.', true); openCatManager(); return; }
   openPartnerModal(null);
 });
+
+/* ── 첨부파일 업로드 (Firebase Storage) ── */
+function updateSlotUI(slot){
+  const f = partnerFiles[slot];
+  if(slot==='biz'){ const el=$('#biz-name'); if(el) el.textContent = f?f.name:'사업자등록증 파일을 선택하세요'; return; }
+  const row = document.querySelector('.upslot[data-slot="'+slot+'"]'); if(!row) return;
+  row.classList.toggle('has', !!f);
+  const sp = row.querySelector('.fmeta span'); if(sp) sp.textContent = f?f.name:'PDF·이미지 첨부 가능';
+  const del = row.querySelector('.delx'); if(del) del.style.display = f?'block':'none';
+}
+async function uploadPartnerFile(slot, input){
+  const f = input.files && input.files[0]; if(!f) return;
+  if(slot==='biz') partnerBizFile = f;
+  const fbh = window.__planinusFirebase;
+  if(!fbh || !fbh.storage){ toast('파일 저장소(Storage)가 아직 활성화되지 않았습니다.', true); input.value=''; return; }
+  if(slot==='biz'){ const el=$('#biz-name'); if(el) el.textContent='업로드 중… '+f.name; }
+  else { const row=document.querySelector('.upslot[data-slot="'+slot+'"]'); if(row){ const sp=row.querySelector('.fmeta span'); if(sp) sp.textContent='업로드 중…'; } }
+  try{
+    const path = 'partners/'+partnerScope+'/'+slot+'-'+Date.now()+'-'+f.name;
+    const ref = fbh.storage.ref().child(path);
+    const snap = await ref.put(f);
+    const url = await snap.ref.getDownloadURL();
+    partnerFiles[slot] = {name:f.name, url:url, path:path};
+    updateSlotUI(slot);
+    toast(FILE_DEFS[slot]+' 업로드 완료');
+  }catch(e){ updateSlotUI(slot); toast('업로드 실패: '+(e&&e.message||e), true); }
+  input.value='';
+}
+async function removePartnerFile(slot){
+  const f = partnerFiles[slot]; if(!f) return;
+  if(slot==='biz') partnerBizFile = null;
+  try{ const fbh=window.__planinusFirebase; if(fbh&&fbh.storage&&f.path) await fbh.storage.ref().child(f.path).delete(); }catch(e){}
+  delete partnerFiles[slot]; updateSlotUI(slot); toast(FILE_DEFS[slot]+' 첨부를 제거했습니다.');
+}
+
+/* ── 견적서 누적 첨부 (여러 개) ── */
+function quoteBlock(){
+  const has = (partnerFiles.quote||[]).length;
+  return `<div class="upslot quote-block${has?' has':''}" style="flex-direction:column;align-items:stretch;gap:10px">
+    <div style="display:flex;align-items:center;gap:11px">
+      <div class="fic">견적</div>
+      <div class="fmeta"><b>견적서 <span style="color:#9DB3AE;font-weight:600">· 누적 보관</span></b><span>여러 개를 계속 추가할 수 있습니다 · PDF·이미지</span></div>
+      <button class="ubtn" type="button" onclick="document.getElementById('file-quote').click()">＋ 추가</button>
+      <input type="file" id="file-quote" hidden multiple accept="image/*,application/pdf" onchange="uploadQuoteFiles(this)">
+    </div>
+    <div id="quote-list">${renderQuoteRows()}</div>
+  </div>`;
+}
+function renderQuoteRows(){
+  const qs = partnerFiles.quote||[];
+  if(!qs.length) return '<div style="font-size:.78rem;color:#C4D3CE;padding:2px">아직 등록된 견적서가 없습니다.</div>';
+  return qs.map((f,i)=>`<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:9px;padding:8px 11px;background:#FBFDFC">
+    <span style="font-size:.7rem;font-weight:700;color:var(--teal);background:#EAF4F1;border-radius:6px;padding:2px 7px;flex-shrink:0">${i+1}</span>
+    <span style="flex:1;min-width:0;font-size:.82rem;word-break:break-all">${esc(f.name)}</span>
+    <button class="delx" type="button" title="제거" onclick="removeQuote(${i})">×</button>
+  </div>`).join('');
+}
+function renderQuoteListUI(){ const el=$('#quote-list'); if(el) el.innerHTML=renderQuoteRows(); }
+async function uploadQuoteFiles(input){
+  const files = Array.from(input.files||[]); if(!files.length) return;
+  const fbh = window.__planinusFirebase;
+  if(!fbh || !fbh.storage){ toast('파일 저장소(Storage)가 아직 활성화되지 않았습니다.', true); input.value=''; return; }
+  if(!partnerFiles.quote) partnerFiles.quote=[];
+  let ok=0;
+  for(const f of files){
+    try{
+      const path = 'partners/'+partnerScope+'/quote-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)+'-'+f.name;
+      const ref = fbh.storage.ref().child(path);
+      const snap = await ref.put(f);
+      const url = await snap.ref.getDownloadURL();
+      partnerFiles.quote.push({name:f.name, url:url, path:path, uploaded_at:Date.now()});
+      renderQuoteListUI(); ok++;
+    }catch(e){ toast('업로드 실패: '+(e&&e.message||e), true); }
+  }
+  if(ok) toast(ok+'개 견적서를 추가했습니다.');
+  input.value='';
+}
+async function removeQuote(i){
+  const qs = partnerFiles.quote||[]; const f = qs[i]; if(!f) return;
+  try{ const fbh=window.__planinusFirebase; if(fbh&&fbh.storage&&f.path) await fbh.storage.ref().child(f.path).delete(); }catch(e){}
+  qs.splice(i,1); renderQuoteListUI(); toast('견적서를 제거했습니다.');
+}
+
+/* ── 사업자등록증 AI 분석 (Gemini) ── */
+function fileToBase64(blob){
+  return new Promise((resolve,reject)=>{
+    const r = new FileReader();
+    r.onload = ()=> resolve(String(r.result).split(',')[1]);
+    r.onerror = reject; r.readAsDataURL(blob);
+  });
+}
+async function analyzePartnerBiz(){
+  const st = $('#ai-status'), btn = $('#ai-btn');
+  const key = (APP_SETTINGS && APP_SETTINGS.geminiKey) || window.__GEMINI_API_KEY__ || '';
+  let blob = partnerBizFile;
+  if(!blob && partnerFiles.biz && partnerFiles.biz.url){
+    try{ blob = await (await fetch(partnerFiles.biz.url)).blob(); }catch(e){}
+  }
+  if(!blob){ toast('먼저 사업자등록증 파일을 선택해 주세요.', true); return; }
+  if(!key){
+    st.className='ai-status show err';
+    st.innerHTML = (ME && ME.role==='admin')
+      ? '⚠️ AI 분석 키가 없습니다. [직원 관리 → AI 분석 키 설정]에서 Gemini 키를 등록해 주세요.'
+      : '⚠️ AI 분석 키가 아직 등록되지 않았습니다. 관리자에게 등록을 요청해 주세요.';
+    return;
+  }
+  btn.disabled = true;
+  st.className = 'ai-status show'; st.innerHTML = '<div class="spinner"></div> 사업자등록증을 분석하고 있습니다…';
+  try{
+    const b64 = await fileToBase64(blob);
+    const prompt = '첨부한 한국 사업자등록증에서 정보를 추출해 JSON으로만 답해줘. 키와 의미: '
+      + 'name(상호 또는 법인명), owner(대표자 성명), bizno(사업자등록번호를 000-00-00000 형식으로), '
+      + 'addr(사업장 소재지 전체 주소), tax(부가가치세 일반과세자/간이과세자이면 "과세", 면세사업자이면 "비과세"). '
+      + '읽을 수 없는 값은 빈 문자열로. 코드블록 없이 순수 JSON 객체만 출력해.';
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',{
+      method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':key},
+      body: JSON.stringify({
+        contents:[{ parts:[ {text:prompt}, {inline_data:{mime_type:(blob.type||'image/jpeg'), data:b64}} ] }],
+        generationConfig:{ temperature:0, responseMimeType:'application/json' }
+      })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error((data.error&&data.error.message)||'분석 요청에 실패했습니다.');
+    let txt = (((data.candidates||[])[0]||{}).content||{}).parts||[];
+    txt = (txt[0]&&txt[0].text||'').replace(/```json|```/g,'').trim();
+    const info = JSON.parse(txt);
+    const filled = applyAIInfo(info);
+    btn.disabled = false;
+    st.className = 'ai-status show done';
+    st.innerHTML = filled.length
+      ? '✅ 분석 완료 — '+filled.join('·')+'을(를) 자동 입력했습니다. 내용을 확인하고 저장하세요.'
+      : '분석을 마쳤지만 추출된 항목이 없습니다. 이미지 화질을 확인하거나 직접 입력해 주세요.';
+    if(filled.length) toast('AI가 '+filled.length+'개 항목을 채웠습니다.');
+  }catch(e){
+    btn.disabled = false;
+    st.className = 'ai-status show err'; st.innerHTML = '⚠️ 분석 실패: '+esc(e&&e.message||String(e));
+  }
+}
+function applyAIInfo(info){
+  const filled = [];
+  const set = (sel, val, wrap, label)=>{
+    if(val==null || String(val).trim()==='') return;
+    const el = $(sel); if(!el) return;
+    el.value = String(val).trim();
+    const w = wrap && $(wrap); if(w) w.classList.add('ai-filled');
+    if(label) filled.push(label);
+  };
+  set('#p-name', info.name, '#wrap-name', '업체명');
+  set('#p-manager', info.owner, '#wrap-manager', '대표자');
+  set('#p-bizno', info.bizno, '#wrap-bizno', '사업자등록번호');
+  set('#p-addr', info.addr, '#wrap-addr', '소재지');
+  if(info.tax){
+    const v = (info.tax==='비과세'||info.tax==='면세') ? '비과세' : '과세';
+    const r = document.querySelector('input[name="ptax"][value="'+v+'"]'); if(r){ r.checked=true; filled.push('과세구분'); }
+  }
+  return filled;
+}
+
+/* ── AI 분석 키 설정(관리자) ── */
+function openAiKeyModal(){
+  const cur = (APP_SETTINGS && APP_SETTINGS.geminiKey) || '';
+  modalCard.innerHTML = `
+    <h3>AI 분석 키 설정</h3>
+    <p style="font-size:.8rem;color:#7E938E;margin-bottom:14px;line-height:1.55">사업자등록증 자동분석에 쓰는 Gemini API 키입니다. 여기에 등록하면 공개 저장소가 아니라 <b>로그인한 직원만 읽을 수 있는 Firebase</b>에 안전하게 저장됩니다.<br><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--teal);font-weight:600">키 발급 페이지 열기 ↗</a></p>
+    <div class="field"><label>Gemini API 키</label><input type="text" id="ai-key-input" value="${esc(cur)}" placeholder="AIza… 또는 AQ.… 키 붙여넣기" autocomplete="off"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-save" onclick="saveAiKey()">저장</button>
+    </div>`;
+  modalBack.classList.add('open'); setTimeout(()=>$('#ai-key-input')&&$('#ai-key-input').focus(),60);
+}
+async function saveAiKey(){
+  const v = $('#ai-key-input').value.trim();
+  try{
+    await api('/settings',{method:'PUT', body:{geminiKey:v}});
+    APP_SETTINGS.geminiKey = v;
+    toast(v?'AI 분석 키를 저장했습니다.':'AI 분석 키를 비웠습니다.');
+    closeModal();
+  }catch(err){ toast(err.message,true); }
+}
+(function(){ const b=$('#ai-key-btn'); if(b) b.addEventListener('click', openAiKeyModal); })();
+
 async function submitPartner(id){
   const name = $('#p-name').value.trim();
   if(!name){ toast('업체명을 입력해 주세요.', true); return; }
-  const body = {name, catId:$('#p-cat').value, manager:$('#p-manager').value.trim(),
-    phone:$('#p-phone').value.trim(), email:$('#p-email').value.trim(), memo:$('#p-memo').value.trim()};
+  const taxEl = document.querySelector('input[name="ptax"]:checked');
+  const body = {
+    name, catId:$('#p-cat').value, role:$('#p-role').value,
+    manager:$('#p-manager').value.trim(), phone:$('#p-phone').value.trim(),
+    email:$('#p-email').value.trim(), homepage:$('#p-home').value.trim(),
+    bizno:$('#p-bizno').value.trim(), addr:$('#p-addr').value.trim(),
+    tax: taxEl ? taxEl.value : '', account:$('#p-account').value.trim(),
+    memo:$('#p-memo').value.trim(), files: partnerFiles
+  };
   try{
     if(id){ await api('/partners/'+id,{method:'PUT', body}); toast('협력업체를 수정했습니다.'); }
     else  { await api('/partners',{method:'POST', body}); toast('협력업체를 등록했습니다.'); }
@@ -1249,7 +1666,7 @@ async function removeUser(id, isPending){
 
 /* ── 모달 ── */
 const modalBack = $('#modal-back'), modalCard = $('#modal-card');
-function closeModal(){ modalBack.classList.remove('open'); modalCard.innerHTML=''; }
+function closeModal(){ modalBack.classList.remove('open'); modalCard.classList.remove('pwide'); modalCard.innerHTML=''; }
 modalBack.addEventListener('click', e => { if(e.target === modalBack) closeModal(); });
 
 /* 일정 추가/수정 모달 (ev 있으면 수정, presetDate는 날짜 칸 클릭 시 사용) */
