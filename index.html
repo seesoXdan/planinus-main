@@ -1291,12 +1291,12 @@ function openPartnerModal(id){
       <div class="dt-headacts"><button class="iconbtn" title="닫기" onclick="${isEdit?`openPartnerView('${p.id}')`:'closeModal()'}">✕</button></div>
     </div>
     <div class="dt-body">
-      <div class="dt-sec"><h4>사업자등록증 AI 분석</h4>
+      <div class="dt-sec"><h4>사업자등록증 (첨부 + AI 자동분석)</h4>
         <div class="upzone">
           <div class="uptop">
             <div class="upic">📄</div>
             <div class="uptxt"><b id="biz-name">${partnerFiles.biz?esc(partnerFiles.biz.name):'사업자등록증 파일을 선택하세요'}</b>
-              <span>PDF·JPG·PNG · 업로드 후 “AI 분석”을 누르면 아래 항목이 자동 입력됩니다</span></div>
+              <span>여기서 올리면 사업자등록증으로 저장됩니다 · PDF·JPG·PNG · 업로드 후 “AI 분석”을 누르면 아래 항목이 자동 입력됩니다</span></div>
             <div class="upbtns">
               <button class="ubtn" type="button" onclick="document.getElementById('file-biz').click()">파일 선택</button>
               <button class="ubtn ai" type="button" id="ai-btn" onclick="analyzePartnerBiz()">✨ AI 분석</button>
@@ -1334,7 +1334,9 @@ function openPartnerModal(id){
         <div class="field"><label>계좌번호</label><input type="text" id="p-account" value="${isEdit?esc(p.account||''):''}" placeholder="예) 국민 123456-04-567890"></div>
       </div>
 
-      <div class="dt-sec"><h4>그 외 첨부 파일</h4>${fileSlot('bank')}${quoteBlock()}</div>
+      <div class="dt-sec"><h4>그 외 첨부 파일</h4>
+        <p style="font-size:.76rem;color:#9DB3AE;margin:-4px 0 11px">사업자등록증은 위 “사업자등록증” 칸에서 등록합니다.</p>
+        ${fileSlot('bank')}${quoteBlock()}</div>
       <div class="dt-sec"><h4>비고</h4>
         <div class="field"><textarea id="p-memo" placeholder="단가·거래조건·특이사항 등">${isEdit?esc(p.memo||''):''}</textarea></div></div>
 
