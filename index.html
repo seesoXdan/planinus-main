@@ -220,6 +220,11 @@ td[data-date]{cursor:pointer}
 td[data-date]:hover{background:#F4F9F7}
 td.today[data-date]:hover{background:#E4F0EC}
 .ev{cursor:pointer!important}
+/* 여러 날 걸친 일정: 셀 경계를 가로질러 이어지도록 */
+.ev.span-start{border-top-right-radius:0;border-bottom-right-radius:0;margin-right:-7px}
+.ev.span-mid{border-radius:0;margin-left:-7px;margin-right:-7px}
+.ev.span-end{border-top-left-radius:0;border-bottom-left-radius:0;margin-left:-7px}
+.ev.span-mid,.ev.span-end{color:transparent}
 
 /* ───────── 자료실 ───────── */
 .lib-toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
@@ -964,7 +969,8 @@ document.addEventListener('click', e => { const b=e.target.closest('[data-go]');
 
 /* ── 대시보드 ── */
 function renderDash(){
-  const todays = EVENTS.filter(ev => ev.date === fmt(TODAY));
+  const t = fmt(TODAY);
+  const todays = EVENTS.filter(ev => { const e = ev.endDate || ev.date; return t >= ev.date && t <= e; });
   $('#today-list').innerHTML = todays.length
     ? todays.map(ev => `<div class="today-item">
         <div class="today-time">${esc(ev.time || '종일')}</div>
@@ -997,10 +1003,20 @@ function renderCal(){
       const cur = new Date(start); cur.setDate(start.getDate() + w*7 + d);
       const other = cur.getMonth() !== calM;
       const isToday = fmt(cur) === fmt(TODAY);
-      const evs = EVENTS.filter(ev => ev.date === fmt(cur) && filters[ev.category]);
-      html += `<td class="${other?'other':''} ${isToday?'today':''}" data-date="${fmt(cur)}" title="클릭하면 이 날짜에 일정 추가">
+      const cd = fmt(cur);
+      const evs = EVENTS.filter(ev => {
+        if(!filters[ev.category]) return false;
+        const e = ev.endDate || ev.date;
+        return cd >= ev.date && cd <= e;
+      }).map(ev => {
+        const e = ev.endDate || ev.date;
+        let span = 'single';
+        if(ev.date !== e) span = cd === ev.date ? 'start' : (cd === e ? 'end' : 'mid');
+        return {ev, span};
+      });
+      html += `<td class="${other?'other':''} ${isToday?'today':''}" data-date="${cd}" title="클릭하면 이 날짜에 일정 추가">
         <span class="dnum">${cur.getDate()}</span>
-        ${evs.map(ev => `<span class="ev ${ev.category}" data-id="${ev.id}" title="${esc(ev.title)} · 클릭하면 수정">${esc(ev.title)}</span>`).join('')}
+        ${evs.map(({ev,span}) => `<span class="ev ${ev.category} span-${span}" data-id="${ev.id}" title="${esc(ev.title)} · 클릭하면 수정">${esc(ev.title)}</span>`).join('')}
       </td>`;
     }
     html += '</tr>';
@@ -1673,10 +1689,14 @@ modalBack.addEventListener('click', e => { if(e.target === modalBack) closeModal
 function openEventModal(ev, presetDate){
   const isEdit = !!ev;
   const date = isEdit ? ev.date : (presetDate || fmt(TODAY));
+  const endDate = isEdit ? (ev.endDate || '') : '';
   const opt = (v,label) => `<option value="${v}"${(isEdit?ev.category:'company')===v?' selected':''}>${label}</option>`;
   modalCard.innerHTML = `
     <h3>${isEdit ? '일정 수정' : '일정 추가'}</h3>
-    <div class="field"><label>날짜</label><input type="date" id="m-date" value="${date}"></div>
+    <div class="modal-row">
+      <div class="field"><label>시작일</label><input type="date" id="m-date" value="${date}" oninput="document.getElementById('m-enddate').min=this.value"></div>
+      <div class="field"><label>종료일 (선택)</label><input type="date" id="m-enddate" value="${endDate}" min="${date}"></div>
+    </div>
     <div class="field"><label>제목</label><input type="text" id="m-title" value="${isEdit?esc(ev.title):''}" placeholder="예) 신규 프로젝트 킥오프"></div>
     <div class="modal-row">
       <div class="field"><label>구분</label><select id="m-cat">
@@ -1693,8 +1713,10 @@ function openEventModal(ev, presetDate){
 $('#add-event-btn').addEventListener('click', () => openEventModal(null));
 async function submitEvent(id){
   const date=$('#m-date').value, title=$('#m-title').value.trim();
-  if(!date||!title){ toast('날짜와 제목을 입력해 주세요.', true); return; }
-  const body = {date, title, category:$('#m-cat').value, time:$('#m-time').value.trim()};
+  const endDate=$('#m-enddate').value;
+  if(!date||!title){ toast('시작일과 제목을 입력해 주세요.', true); return; }
+  if(endDate && endDate < date){ toast('종료일은 시작일보다 빠를 수 없습니다.', true); return; }
+  const body = {date, endDate: endDate||'', title, category:$('#m-cat').value, time:$('#m-time').value.trim()};
   try{
     if(id){ await api('/events/'+id,{method:'PUT', body}); toast('일정을 수정했습니다.'); }
     else  { await api('/events',{method:'POST', body}); toast('일정을 추가했습니다.'); }

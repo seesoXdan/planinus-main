@@ -272,7 +272,7 @@
       var em = await requireUser();
       var eb = jsonBody || {};
       if (!eb.date || !eb.title) return ERR('날짜와 제목은 필수입니다.');
-      var edoc = { date: eb.date, title: eb.title, category: eb.category || 'event', time: eb.time || '', created_by: em.id, created_at: nowStr() };
+      var edoc = { date: eb.date, endDate: eb.endDate || '', title: eb.title, category: eb.category || 'event', time: eb.time || '', created_by: em.id, created_at: nowStr() };
       var eref = await db.collection('events').add(edoc);
       edoc.id = eref.id;
       return J(edoc);
@@ -281,7 +281,7 @@
     if (mEv && method === 'PUT') {
       await requireUser();
       var pb = jsonBody || {};
-      var up = { date: pb.date, title: pb.title, category: pb.category, time: pb.time || '' };
+      var up = { date: pb.date, endDate: pb.endDate || '', title: pb.title, category: pb.category, time: pb.time || '' };
       await db.collection('events').doc(mEv[1]).update(up);
       up.id = mEv[1];
       return J(up);
