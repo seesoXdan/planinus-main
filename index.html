@@ -225,6 +225,8 @@ td.today[data-date]:hover{background:#E4F0EC}
 .ev.span-mid{border-radius:0;margin-left:-7px;margin-right:-7px}
 .ev.span-end{border-top-left-radius:0;border-bottom-left-radius:0;margin-left:-7px}
 .ev.span-mid,.ev.span-end{color:transparent}
+/* 빈 레인: 같은 일정이 여러 날에 걸쳐 같은 줄에 오도록 자리만 차지 */
+.ev.placeholder{visibility:hidden;background:none;cursor:default!important}
 
 /* ───────── 자료실 ───────── */
 .lib-toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
@@ -992,10 +994,32 @@ function renderDash(){
 /* ── 캘린더 ── */
 let calY = TODAY.getFullYear(), calM = TODAY.getMonth();
 const filters = {company:true, event:true, off:true};
+/* 일정마다 고정 레인(세로 줄) 부여 → 여러 날 걸친 막대가 끊기지 않고 한 줄로 이어짐 */
+function assignLanes(events){
+  const sorted = [...events].sort((a,b) => {
+    if(a.date !== b.date) return a.date < b.date ? -1 : 1;
+    const ae = a.endDate || a.date, be = b.endDate || b.date;
+    if(ae !== be) return ae > be ? -1 : 1;          // 긴 일정 먼저(낮은 레인)
+    return String(a.id) < String(b.id) ? -1 : 1;
+  });
+  const laneEnd = [];                                // 각 레인에 마지막으로 놓인 일정의 종료일
+  const laneOf = {};
+  for(const ev of sorted){
+    const s = ev.date, e = ev.endDate || ev.date;
+    let lane = laneEnd.findIndex(end => end < s);    // 겹치지 않는 가장 낮은 레인
+    if(lane === -1){ lane = laneEnd.length; }
+    laneEnd[lane] = e;
+    laneOf[ev.id] = lane;
+  }
+  return laneOf;
+}
+
 function renderCal(){
   $('#cal-title').textContent = `${calY}년 ${calM+1}월`;
   const first = new Date(calY, calM, 1);
   const start = new Date(first); start.setDate(1 - first.getDay());
+  const visible = EVENTS.filter(ev => filters[ev.category]);
+  const laneOf = assignLanes(visible);
   let html = '';
   for(let w=0; w<6; w++){
     html += '<tr>';
@@ -1004,19 +1028,24 @@ function renderCal(){
       const other = cur.getMonth() !== calM;
       const isToday = fmt(cur) === fmt(TODAY);
       const cd = fmt(cur);
-      const evs = EVENTS.filter(ev => {
-        if(!filters[ev.category]) return false;
+      const slots = [];                              // 레인 index → 일정
+      visible.forEach(ev => {
         const e = ev.endDate || ev.date;
-        return cd >= ev.date && cd <= e;
-      }).map(ev => {
-        const e = ev.endDate || ev.date;
+        if(cd < ev.date || cd > e) return;
         let span = 'single';
         if(ev.date !== e) span = cd === ev.date ? 'start' : (cd === e ? 'end' : 'mid');
-        return {ev, span};
+        slots[laneOf[ev.id]] = {ev, span};
       });
+      let cells = '';
+      for(let i=0; i<slots.length; i++){
+        const s = slots[i];
+        cells += s
+          ? `<span class="ev ${s.ev.category} span-${s.span}" data-id="${s.ev.id}" title="${esc(s.ev.title)} · 클릭하면 수정">${esc(s.ev.title)}</span>`
+          : `<span class="ev placeholder">·</span>`;   // 빈 줄: 자리만 차지해 정렬 유지
+      }
       html += `<td class="${other?'other':''} ${isToday?'today':''}" data-date="${cd}" title="클릭하면 이 날짜에 일정 추가">
         <span class="dnum">${cur.getDate()}</span>
-        ${evs.map(({ev,span}) => `<span class="ev ${ev.category} span-${span}" data-id="${ev.id}" title="${esc(ev.title)} · 클릭하면 수정">${esc(ev.title)}</span>`).join('')}
+        ${cells}
       </td>`;
     }
     html += '</tr>';
