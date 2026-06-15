@@ -214,9 +214,8 @@ td.today .dnum{
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;
 }
 .ev.company{background:var(--teal)}
-.ev.event{background:var(--teal-soft)}
-.ev.deadline{background:var(--sand)}
-.ev.off{background:#C9D9D5;color:var(--ink)}
+.ev.event{background:var(--coral)}
+.ev.off{background:var(--sand)}
 td[data-date]{cursor:pointer}
 td[data-date]:hover{background:#F4F9F7}
 td.today[data-date]:hover{background:#E4F0EC}
@@ -686,9 +685,8 @@ body:has(#page-quote.active) .main{max-width:1280px}
           <h2 id="cal-title"></h2>
           <div class="cal-filters" id="cal-filters">
             <button class="chip on" data-f="company"><span class="sw" style="background:var(--teal)"></span>회사일정</button>
-            <button class="chip on" data-f="event"><span class="sw" style="background:var(--teal-soft)"></span>행사일정</button>
-            <button class="chip on" data-f="deadline"><span class="sw" style="background:var(--sand)"></span>마감</button>
-            <button class="chip on" data-f="off"><span class="sw" style="background:#C9D9D5"></span>휴가·휴무</button>
+            <button class="chip on" data-f="event"><span class="sw" style="background:var(--coral)"></span>행사일정</button>
+            <button class="chip on" data-f="off"><span class="sw" style="background:var(--sand)"></span>휴가·휴무</button>
           </div>
         </div>
         <div class="cal-wrap"><table class="cal">
@@ -798,7 +796,7 @@ let EVENTS = [], NOTICES = [], FILES = [];
 let PARTNERS = [], PARTNER_CATS = [], partnerCat = 'all';
 let APP_SETTINGS = {};   // 외부 연동 키 등 (Firestore settings/integrations)
 
-const CAT_LABEL = {company:'회사 일정', event:'행사 일정', deadline:'마감', off:'휴가·휴무'};
+const CAT_LABEL = {company:'회사 일정', event:'행사 일정', off:'휴가·휴무'};
 const ICON = {pdf:'PDF', doc:'DOC', xls:'XLS', zip:'ZIP', ppt:'PPT'};
 
 /* ── API 헬퍼 ── */
@@ -987,7 +985,7 @@ function renderDash(){
 
 /* ── 캘린더 ── */
 let calY = TODAY.getFullYear(), calM = TODAY.getMonth();
-const filters = {company:true, event:true, deadline:true, off:true};
+const filters = {company:true, event:true, off:true};
 function renderCal(){
   $('#cal-title').textContent = `${calY}년 ${calM+1}월`;
   const first = new Date(calY, calM, 1);
@@ -1682,7 +1680,7 @@ function openEventModal(ev, presetDate){
     <div class="field"><label>제목</label><input type="text" id="m-title" value="${isEdit?esc(ev.title):''}" placeholder="예) 신규 프로젝트 킥오프"></div>
     <div class="modal-row">
       <div class="field"><label>구분</label><select id="m-cat">
-        ${opt('company','회사 일정')}${opt('event','행사 일정')}${opt('deadline','마감')}${opt('off','휴가·휴무')}</select></div>
+        ${opt('company','회사 일정')}${opt('event','행사 일정')}${opt('off','휴가·휴무')}</select></div>
       <div class="field"><label>시간 (선택)</label><input type="text" id="m-time" value="${isEdit?esc(ev.time||''):''}" placeholder="예) 14:00"></div>
     </div>
     <div class="modal-actions">
