@@ -186,6 +186,26 @@
       return J({ ok: true });
     }
 
+    /* ===== 견적 품목 카탈로그(구분·세부항목) — 팀 공유 =====
+       단일 문서 quote_catalog/default 에 {cats, items} 저장.
+       읽기·쓰기: 승인된 직원이면 누구나 (협력업체 분야와 동일 정책). */
+    if (path === '/catalog' && method === 'GET') {
+      await requireUser();
+      var cg = await db.collection('quote_catalog').doc('default').get();
+      var cd = cg.exists ? cg.data() : {};
+      return J({ cats: cd.cats || [], items: cd.items || [], updated_at: cd.updated_at || '', updated_by: cd.updated_by || '' });
+    }
+    if (path === '/catalog' && method === 'PUT') {
+      var cm = await requireUser();
+      var cb = jsonBody || {};
+      var cats = Array.isArray(cb.cats) ? cb.cats : [];
+      var its = Array.isArray(cb.items) ? cb.items : [];
+      await db.collection('quote_catalog').doc('default').set({
+        cats: cats, items: clean(its), updated_by: cm.id, updated_at: nowStr()
+      }, { merge: true });
+      return J({ ok: true });
+    }
+
     /* ===== 직원 관리(관리자 전용) ===== */
     if (path === '/users' && method === 'GET') {
       await requireAdmin();

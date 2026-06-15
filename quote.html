@@ -81,9 +81,31 @@ main{display:grid;grid-template-columns:310px 1fr;flex:1;}
 .amtcell{font-weight:700;color:var(--accent2);text-align:right;white-space:nowrap;}
 .delbtn{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:3px 7px;border-radius:5px;font-size:14px;transition:all .15s;display:block;margin:0 auto;}
 .delbtn:hover{color:var(--danger);background:rgba(224,85,85,.1);}
-.add-row{background:var(--surface2);border-radius:var(--r);padding:12px;margin-top:10px;display:grid;grid-template-columns:1.2fr 1.2fr 1.2fr 55px 55px 90px auto;gap:8px;align-items:end;}
+.add-row{background:var(--surface2);border-radius:var(--r);padding:12px;margin-top:10px;display:grid;grid-template-columns:1.1fr 1.4fr 56px 56px 140px 1fr auto;gap:8px;align-items:end;}
 .add-row .fg{margin-bottom:0;}
 .add-row .fg label{font-size:10px;}
+/* 카탈로그 관리 모달 */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:780px;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border);}
+.modal-head h3{margin:0;font-size:15px;color:var(--accent2);font-family:var(--serif);}
+.modal-head .x{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:2px 6px;}
+.modal-body{padding:16px 20px;overflow:auto;}
+.modal-foot{display:flex;justify-content:space-between;gap:8px;padding:13px 20px;border-top:1px solid var(--border);}
+.mod-section{margin-bottom:22px;}
+.mod-title{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--accent2);margin-bottom:10px;}
+.cm-row{display:grid;grid-template-columns:1fr 56px 56px;gap:8px;align-items:center;margin-bottom:6px;}
+.cm-row.det{grid-template-columns:1.5fr 100px 1.2fr 56px;}
+.cm-in{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:12px;padding:6px 8px;outline:none;width:100%;}
+.cm-in:focus{border-color:var(--accent);}
+.cm-in.price{text-align:right;}
+.cm-count{font-size:11px;color:var(--muted);text-align:center;}
+.cm-del{background:transparent;border:1px solid var(--danger);color:var(--danger);border-radius:6px;font-size:11px;padding:5px 6px;cursor:pointer;font-family:var(--font);}
+.cm-empty{font-size:12px;color:var(--muted);padding:8px 0;}
+.mod-addrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;}
+.mod-addrow input,.mod-addrow select{flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:12px;padding:7px 9px;outline:none;}
+.mod-sel-wrap{margin-bottom:10px;}
+.mod-sel-wrap select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:12px;padding:8px 10px;outline:none;}
 
 /* SUMMARY */
 .sum-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;margin-top:22px;}
@@ -414,7 +436,9 @@ main{display:grid;grid-template-columns:310px 1fr;flex:1;}
 <aside class="sidebar">
   <div class="qno-badge">
     <span>견적번호</span>
-    <strong id="quoteNumber">D-260001</strong>
+    <input id="quoteNumber" value="D-260001" oninput="syncPreview()"
+      title="직접 수정할 수 있습니다"
+      style="background:transparent;border:none;border-bottom:1px dashed var(--accent2);color:var(--accent2);font-weight:800;font-size:15px;text-align:right;outline:none;width:120px;padding:0" />
   </div>
 
   <!-- 공급자 -->
@@ -533,29 +557,22 @@ main{display:grid;grid-template-columns:310px 1fr;flex:1;}
   <div id="tab-editor" class="tabpanel active">
     <div class="tbl-head">
       <div class="tbl-title">품목 목록</div>
+      <button class="btn btn-outline btn-sm" onclick="openCatalog()" style="white-space:nowrap">⚙ 구분·세부항목 관리</button>
     </div>
 
-    <div class="cattabs">
-      <button class="cattab active" onclick="filterCat('all',this)">전체</button>
-      <button class="cattab" onclick="filterCat('stage',this)">무대/장치</button>
-      <button class="cattab" onclick="filterCat('av',this)">음향/영상</button>
-      <button class="cattab" onclick="filterCat('catering',this)">케이터링</button>
-      <button class="cattab" onclick="filterCat('venue',this)">장소/대관</button>
-      <button class="cattab" onclick="filterCat('staff',this)">인력</button>
-      <button class="cattab" onclick="filterCat('etc',this)">기타</button>
-    </div>
+    <div class="cattabs" id="cattabs"></div>
 
     <table class="itable" id="itemsTable">
       <thead>
         <tr>
-          <th style="width:14%">구분1</th>
-          <th style="width:16%">구분2</th>
-          <th style="width:13%">세부항목</th>
+          <th style="width:14%">구분</th>
+          <th style="width:18%">세부항목</th>
           <th style="width:7%">수량</th>
           <th style="width:7%">횟수</th>
           <th style="width:7%">단위</th>
-          <th style="width:14%">단가</th>
+          <th style="width:13%">단가</th>
           <th style="width:13%">금액</th>
+          <th style="width:16%">비고</th>
           <th style="width:5%">삭제</th>
         </tr>
       </thead>
@@ -565,40 +582,30 @@ main{display:grid;grid-template-columns:310px 1fr;flex:1;}
     <!-- 품목 추가 -->
     <div class="add-row">
       <div class="fg">
-        <label>구분1 *</label>
-        <input type="text" id="newItemCat1" placeholder="예) 무대연출" onkeydown="if(event.key==='Enter')addItem()" />
-      </div>
-      <div class="fg">
-        <label>구분2</label>
-        <input type="text" id="newItemCat2" placeholder="예) 무대설치" onkeydown="if(event.key==='Enter')addItem()" />
+        <label>구분 *</label>
+        <select id="newItemCat2" class="catsel" onchange="onNewCatChange()" style="width:100%"></select>
       </div>
       <div class="fg">
         <label>세부항목</label>
-        <div style="display:flex;gap:4px;">
-          <select id="newItemCat" class="catsel" onchange="syncCustomCat(this)" style="flex:1;min-width:0">
-            <option value="stage">무대/장치</option>
-            <option value="av">음향/영상</option>
-            <option value="catering">케이터링</option>
-            <option value="venue">장소/대관</option>
-            <option value="staff">인력</option>
-            <option value="etc">기타</option>
-            <option value="__custom__">직접 입력...</option>
-          </select>
-        </div>
-        <input type="text" id="newItemCatCustom" class="ni" placeholder="세부항목 입력"
-          style="width:100%;margin-top:4px;display:none" />
+        <select id="newItemDetail" class="catsel" onchange="onNewDetailChange()" style="width:100%"></select>
       </div>
       <div class="fg">
         <label>수량</label>
-        <input type="number" id="newItemQty" class="ni qty" value="1" min="1" style="width:100%" />
+        <input type="number" id="newItemQty" class="ni qty" value="1" min="1" max="999"
+          oninput="this.value=this.value.slice(0,3)" style="width:100%" />
       </div>
       <div class="fg">
         <label>횟수</label>
-        <input type="number" id="newItemTimes" class="ni qty" value="1" min="1" style="width:100%" />
+        <input type="number" id="newItemTimes" class="ni qty" value="1" min="1" max="999"
+          oninput="this.value=this.value.slice(0,3)" style="width:100%" />
       </div>
       <div class="fg">
         <label>단가 (원)</label>
         <input type="number" id="newItemPrice" class="ni" placeholder="0" style="width:100%" />
+      </div>
+      <div class="fg">
+        <label>비고</label>
+        <input type="text" id="newItemNote" class="ni" placeholder="비고" style="width:100%" />
       </div>
       <button class="btn btn-primary" onclick="addItem()" style="margin-top:16px;white-space:nowrap">+ 추가</button>
     </div>
@@ -678,6 +685,43 @@ main{display:grid;grid-template-columns:310px 1fr;flex:1;}
 
 <div class="toast" id="toast"></div>
 
+<!-- ═══════════ 카탈로그(구분·세부항목) 관리 모달 ═══════════ -->
+<div class="modal-overlay" id="catalogModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>구분 · 세부항목 관리</h3>
+      <button class="x" onclick="closeCatalog()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="mod-section">
+        <div class="mod-title">구분 (카테고리)</div>
+        <div id="catManageList"></div>
+        <div class="mod-addrow">
+          <input id="newCatName" placeholder="새 구분 이름" onkeydown="if(event.key==='Enter')addCategory()" />
+          <button class="btn btn-primary btn-sm" onclick="addCategory()">+ 구분 추가</button>
+        </div>
+      </div>
+      <div class="mod-section">
+        <div class="mod-title">세부항목</div>
+        <div class="mod-sel-wrap">
+          <select id="manageCatSel" onchange="renderDetailManage()"></select>
+        </div>
+        <div id="detailManageList"></div>
+        <div class="mod-addrow">
+          <input id="newDetName" placeholder="세부항목명" />
+          <input id="newDetPrice" type="number" placeholder="단가(선택)" style="max-width:120px" />
+          <input id="newDetNote" placeholder="비고(선택)" />
+          <button class="btn btn-primary btn-sm" onclick="addDetail()">+ 추가</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" onclick="resetCatalog()">기본값으로 초기화</button>
+      <button class="btn btn-outline btn-sm" onclick="closeCatalog()">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════ Firebase 연결 ═══════════ -->
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
@@ -700,12 +744,283 @@ const CAT_LABELS = {
   venue:'장소/대관', staff:'인력', etc:'기타'
 };
 
+/* ═══════════ 엑셀 품목 데이터 (구분 / 세부항목 / 단가 / 비고) ═══════════ */
+const DEFAULT_ITEM_DATA=[
+  {"cat": "인건비", "name": "총괄 책임(PD)", "price": 0, "note": ""},
+  {"cat": "인건비", "name": "운영 총괄", "price": 0, "note": ""},
+  {"cat": "인건비", "name": "현장운영인력", "price": 0, "note": ""},
+  {"cat": "인건비", "name": "의전도우미", "price": 0, "note": ""},
+  {"cat": "인건비", "name": "디자인 코디네이터", "price": 0, "note": ""},
+  {"cat": "인건비", "name": "디자인 편집비용", "price": 0, "note": ""},
+  {"cat": "무대시스템", "name": "영상시스템(스위쳐)", "price": 1800000, "note": ""},
+  {"cat": "무대시스템", "name": "음향시스템(음향콘솔)", "price": 2500000, "note": ""},
+  {"cat": "무대시스템", "name": "음향시스템(음향콘솔, 무선마이크, 스피커)", "price": 3500000, "note": "무선마이크 5개기본"},
+  {"cat": "무대시스템", "name": "영상맥북", "price": 200000, "note": ""},
+  {"cat": "무대시스템", "name": "노트북", "price": 100000, "note": ""},
+  {"cat": "무대시스템", "name": "Tv모니터(50인치)", "price": 250000, "note": ""},
+  {"cat": "무대시스템", "name": "테크니션(영상감독)", "price": 500000, "note": ""},
+  {"cat": "무대시스템", "name": "테크니션(음향감독)", "price": 500000, "note": ""},
+  {"cat": "무대시스템", "name": "테크니션(카메라감독)", "price": 500000, "note": ""},
+  {"cat": "무대시스템", "name": "온라인 스트리밍(vmix)", "price": 2000000, "note": ""},
+  {"cat": "무대시스템", "name": "카메라(PZ 카메라)", "price": 400000, "note": ""},
+  {"cat": "무대시스템", "name": "카메라(ENG카메라)", "price": 1000000, "note": ""},
+  {"cat": "무대시스템", "name": "온라인 스위쳐(시스템)", "price": 1600000, "note": ""},
+  {"cat": "무대시스템", "name": "Zoom 시스템", "price": 600000, "note": ""},
+  {"cat": "영상제작물", "name": "루핑영상", "price": 1500000, "note": ""},
+  {"cat": "영상제작물", "name": "메인동영상", "price": 0, "note": ""},
+  {"cat": "영상제작물", "name": "편집영상", "price": 2000000, "note": ""},
+  {"cat": "제작물", "name": "현수막", "price": 0, "note": ""},
+  {"cat": "제작물", "name": "x배너(실내)", "price": 80000, "note": ""},
+  {"cat": "제작물", "name": "x배너(실외)", "price": 120000, "note": ""},
+  {"cat": "제작물", "name": "폼보드", "price": 0, "note": ""},
+  {"cat": "제작물", "name": "폼디움", "price": 0, "note": ""},
+  {"cat": "제작물", "name": "명패", "price": 0, "note": ""},
+  {"cat": "제작물", "name": "네임텍", "price": 0, "note": ""},
+  {"cat": "제작물", "name": "포스터", "price": 0, "note": ""},
+  {"cat": "제작물", "name": "안내간지제작", "price": 400000, "note": ""},
+  {"cat": "제작물", "name": "발표자료책자인쇄", "price": 0, "note": ""},
+  {"cat": "제작물", "name": "PDF제작", "price": 500000, "note": ""},
+  {"cat": "제작물", "name": "PDF제작(웹사이트 포함)", "price": 1200000, "note": ""},
+  {"cat": "부스제작", "name": "옥타부스", "price": 0, "note": "조명, 파이텍스, 설치, 철거, 포함"},
+  {"cat": "부스제작", "name": "트러스부스", "price": 0, "note": "조명, 파이텍스, 설치, 철거, 포함"},
+  {"cat": "부스제작", "name": "조명부스", "price": 0, "note": "조명, 파이텍스, 설치, 철거, 포함"},
+  {"cat": "부스제작", "name": "목공부스", "price": 0, "note": "조명, 파이텍스, 설치, 철거, 포함"},
+  {"cat": "F&B", "name": "F&B", "price": 0, "note": ""},
+  {"cat": "기타", "name": "운송비용", "price": 0, "note": ""},
+  {"cat": "기타", "name": "세팅 및 철거", "price": 0, "note": ""},
+  {"cat": "기타", "name": "행사보험", "price": 0, "note": ""},
+  {"cat": "기타", "name": "산업안전보건관리비", "price": 0, "note": ""},
+  {"cat": "참가자관리-RSVP", "name": "참석자 이메일 및 SMS", "price": 400000, "note": "100명기준"},
+  {"cat": "참가자관리-RSVP", "name": "전자서명 (참가자 보안서약서 접수)", "price": 200000, "note": "100명기준"},
+  {"cat": "렌탈", "name": "의자(행사용)", "price": 0, "note": ""},
+  {"cat": "렌탈", "name": "테이블(원테이블)", "price": 0, "note": ""},
+  {"cat": "렌탈", "name": "테이블(일자형테이블)", "price": 0, "note": ""},
+  {"cat": "렌탈", "name": "테이블보", "price": 0, "note": ""},
+  {"cat": "렌탈", "name": "토크쇼의자", "price": 0, "note": ""},
+  {"cat": "렌탈", "name": "토크쇼테이블", "price": 0, "note": ""},
+  {"cat": "렌탈", "name": "VIP의자", "price": 0, "note": ""},
+  {"cat": "렌탈", "name": "VIP테이블", "price": 0, "note": ""},
+  {"cat": "렌탈", "name": "운송비", "price": 400000, "note": ""}
+];
+const DEFAULT_CATS = DEFAULT_ITEM_DATA.reduce((a,d)=>{ if(!a.includes(d.cat)) a.push(d.cat); return a; },[]);
+
+/* 카탈로그(구분/세부항목) — 사용자가 추가·수정·삭제 가능, localStorage에 저장 */
+let ITEM_DATA, DETAIL_CATS;
+function loadCatalog(){
+  try{
+    const raw = localStorage.getItem('eq_catalog');
+    if(raw){
+      const o = JSON.parse(raw);
+      if(o && Array.isArray(o.items) && Array.isArray(o.cats)){
+        ITEM_DATA = o.items; DETAIL_CATS = o.cats; return;
+      }
+    }
+  }catch(e){}
+  ITEM_DATA  = JSON.parse(JSON.stringify(DEFAULT_ITEM_DATA));
+  DETAIL_CATS = [...DEFAULT_CATS];
+}
+function saveCatalog(){
+  try{ localStorage.setItem('eq_catalog', JSON.stringify({cats:DETAIL_CATS, items:ITEM_DATA})); }catch(e){}
+  saveCatalogToServer();   // 로그인 상태면 Firestore에도 저장(팀 공유)
+}
+/* Firestore 저장(디바운스) — 빠른 연속 편집을 한 번에 묶어 저장 */
+let _catalogSaveTimer = null;
+function saveCatalogToServer(){
+  if(!qToken()) return;            // 로그인 안 했으면 로컬만
+  clearTimeout(_catalogSaveTimer);
+  _catalogSaveTimer = setTimeout(()=>{
+    qapi('/catalog', {method:'PUT', body:{cats:DETAIL_CATS, items:ITEM_DATA}}).catch(()=>{});
+  }, 500);
+}
+/* Firestore에서 공유 카탈로그 불러오기 — 로그인되어 있으면 서버값을 우선 적용 */
+async function loadCatalogFromServer(){
+  let r;
+  try{ r = await qapi('/catalog'); }   // 로그인 안 됐으면 401 → catch
+  catch(e){ return; }                  // 서버 없음/미로그인 → 로컬 유지
+  if(!r) return;
+  const hasServer = (Array.isArray(r.cats) && r.cats.length) || (Array.isArray(r.items) && r.items.length);
+  if(hasServer){
+    DETAIL_CATS = r.cats || [];
+    ITEM_DATA   = r.items || [];
+    try{ localStorage.setItem('eq_catalog', JSON.stringify({cats:DETAIL_CATS, items:ITEM_DATA})); }catch(e){}
+    applyCatalogToUI();
+  } else {
+    // 서버에 아직 없으면 현재(기본/로컬) 카탈로그로 1회 시드 → 팀 공유 시작
+    saveCatalogToServer();
+  }
+}
+/* 카탈로그 변경을 메인 화면에 반영 */
+function applyCatalogToUI(){
+  const catSel = document.getElementById('newItemCat2');
+  if(catSel){
+    const cur = catSel.value;
+    catSel.innerHTML = catOptionsHtml(DETAIL_CATS.includes(cur) ? cur : '');
+    onNewCatChange();
+  }
+  if(currentFilter!=='all' && !DETAIL_CATS.includes(currentFilter)) currentFilter='all';
+  renderCatTabs();
+  renderItems();
+  // 관리 모달이 열려 있으면 같이 갱신
+  const modal = document.getElementById('catalogModal');
+  if(modal && modal.style.display==='flex') reRenderCatalogPanels();
+}
+loadCatalog();
+/* 특정 구분의 세부항목 목록 */
+function detailsForCat(cat){ return ITEM_DATA.filter(d=>d.cat===cat); }
+/* 구분+세부항목으로 단가/비고 조회 */
+function lookupDetail(cat, name){ return ITEM_DATA.find(d=>d.cat===cat && d.name===name) || null; }
+/* 구분 드롭다운 옵션 HTML */
+function catOptionsHtml(selected){
+  return '<option value="">— 구분 선택 —</option>' +
+    DETAIL_CATS.map(c=>`<option value="${escHtml(c)}"${c===selected?' selected':''}>${escHtml(c)}</option>`).join('');
+}
+/* 세부항목 드롭다운 옵션 HTML (선택된 구분에 종속) */
+function detailOptionsHtml(cat, selectedName){
+  if(!cat) return '<option value="">— 먼저 구분 선택 —</option>';
+  return '<option value="">— 세부항목 선택 —</option>' +
+    detailsForCat(cat).map(d=>`<option value="${escHtml(d.name)}"${d.name===selectedName?' selected':''}>${escHtml(d.name)}</option>`).join('');
+}
+
+/* ═══════════ 카탈로그(구분·세부항목) 관리 ═══════════ */
+function openCatalog(){
+  renderCatManage();
+  renderManageCatSelect();
+  renderDetailManage();
+  document.getElementById('catalogModal').style.display='flex';
+}
+function closeCatalog(){ document.getElementById('catalogModal').style.display='none'; }
+function reRenderCatalogPanels(){ renderCatManage(); renderManageCatSelect(); renderDetailManage(); }
+
+/* 변경 후 메인 화면(추가폼 구분/세부항목, 필터탭, 품목표) 갱신 + 저장 */
+function refreshCatalogUI(){
+  saveCatalog();
+  const catSel = document.getElementById('newItemCat2');
+  if(catSel){
+    const cur = catSel.value;
+    catSel.innerHTML = catOptionsHtml(DETAIL_CATS.includes(cur) ? cur : '');
+    onNewCatChange();
+  }
+  if(currentFilter!=='all' && !DETAIL_CATS.includes(currentFilter)) currentFilter='all';
+  renderCatTabs();
+  renderItems();
+}
+
+/* ── 구분 관리 ── */
+function renderCatManage(){
+  const box = document.getElementById('catManageList');
+  if(!box) return;
+  box.innerHTML = DETAIL_CATS.map((c,i)=>`
+    <div class="cm-row">
+      <input class="cm-in" value="${escHtml(c)}" onchange="renameCategory(${i},this.value)" />
+      <span class="cm-count">${detailsForCat(c).length}개</span>
+      <button class="cm-del" onclick="deleteCategory(${i})">삭제</button>
+    </div>`).join('') || '<div class="cm-empty">구분이 없습니다. 아래에서 추가하세요.</div>';
+}
+function addCategory(){
+  const inp = document.getElementById('newCatName');
+  const name = (inp.value||'').trim();
+  if(!name){ showToast('구분 이름을 입력하세요','⚠️'); return; }
+  if(DETAIL_CATS.includes(name)){ showToast('이미 있는 구분입니다','⚠️'); return; }
+  DETAIL_CATS.push(name);
+  inp.value='';
+  refreshCatalogUI(); reRenderCatalogPanels();
+  const ms = document.getElementById('manageCatSel'); if(ms){ ms.value=name; renderDetailManage(); }
+}
+function renameCategory(i, newName){
+  newName = (newName||'').trim();
+  const old = DETAIL_CATS[i];
+  if(!newName || newName===old){ renderCatManage(); return; }
+  if(DETAIL_CATS.includes(newName)){ showToast('이미 있는 구분입니다','⚠️'); renderCatManage(); return; }
+  DETAIL_CATS[i] = newName;
+  ITEM_DATA.forEach(d=>{ if(d.cat===old) d.cat=newName; });
+  items.forEach(it=>{ if(it.cat2===old) it.cat2=newName; });
+  if(currentFilter===old) currentFilter=newName;
+  refreshCatalogUI(); reRenderCatalogPanels();
+}
+function deleteCategory(i){
+  const c = DETAIL_CATS[i];
+  if(!confirm(`'${c}' 구분과 그 안의 세부항목을 모두 삭제할까요?`)) return;
+  DETAIL_CATS.splice(i,1);
+  ITEM_DATA = ITEM_DATA.filter(d=>d.cat!==c);
+  if(currentFilter===c) currentFilter='all';
+  refreshCatalogUI(); reRenderCatalogPanels();
+}
+
+/* ── 세부항목 관리 ── */
+function renderManageCatSelect(){
+  const sel = document.getElementById('manageCatSel');
+  if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = DETAIL_CATS.length
+    ? DETAIL_CATS.map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('')
+    : '<option value="">— 구분 없음 —</option>';
+  if(DETAIL_CATS.includes(cur)) sel.value=cur;
+}
+function renderDetailManage(){
+  const box = document.getElementById('detailManageList');
+  if(!box) return;
+  const cat = document.getElementById('manageCatSel').value;
+  if(!cat){ box.innerHTML='<div class="cm-empty">구분을 먼저 선택하세요</div>'; return; }
+  const rows = ITEM_DATA.map((d,idx)=>({d,idx})).filter(o=>o.d.cat===cat);
+  box.innerHTML = rows.map(({d,idx})=>`
+    <div class="cm-row det">
+      <input class="cm-in" value="${escHtml(d.name)}" placeholder="세부항목명" onchange="updateDetail(${idx},'name',this.value)" />
+      <input class="cm-in price" type="number" value="${d.price||''}" placeholder="단가" onchange="updateDetail(${idx},'price',this.value)" />
+      <input class="cm-in" value="${escHtml(d.note||'')}" placeholder="비고" onchange="updateDetail(${idx},'note',this.value)" />
+      <button class="cm-del" onclick="deleteDetail(${idx})">삭제</button>
+    </div>`).join('') || '<div class="cm-empty">세부항목이 없습니다. 아래에서 추가하세요.</div>';
+}
+function addDetail(){
+  const cat = document.getElementById('manageCatSel').value;
+  if(!cat){ showToast('구분을 먼저 선택하세요','⚠️'); return; }
+  const name = (document.getElementById('newDetName').value||'').trim();
+  if(!name){ showToast('세부항목명을 입력하세요','⚠️'); return; }
+  if(lookupDetail(cat,name)){ showToast('이미 있는 세부항목입니다','⚠️'); return; }
+  const price = parseFloat(document.getElementById('newDetPrice').value)||0;
+  const note  = (document.getElementById('newDetNote').value||'').trim();
+  ITEM_DATA.push({cat, name, price, note});
+  document.getElementById('newDetName').value='';
+  document.getElementById('newDetPrice').value='';
+  document.getElementById('newDetNote').value='';
+  refreshCatalogUI(); renderDetailManage();
+}
+function updateDetail(idx, field, val){
+  const d = ITEM_DATA[idx];
+  if(!d) return;
+  if(field==='price'){ d.price = parseFloat(val)||0; }
+  else if(field==='name'){
+    const nn = (val||'').trim();
+    if(!nn){ renderDetailManage(); return; }
+    if(ITEM_DATA.some((x,j)=>j!==idx && x.cat===d.cat && x.name===nn)){ showToast('이미 있는 세부항목입니다','⚠️'); renderDetailManage(); return; }
+    const old = d.name; d.name = nn;
+    items.forEach(it=>{ if(it.cat2===d.cat && it.detail===old) it.detail=nn; });
+  } else { d.note = (val||'').trim(); }
+  refreshCatalogUI(); renderDetailManage();
+}
+function deleteDetail(idx){
+  if(!ITEM_DATA[idx]) return;
+  if(!confirm('이 세부항목을 삭제할까요?')) return;
+  ITEM_DATA.splice(idx,1);
+  refreshCatalogUI(); renderDetailManage();
+}
+function resetCatalog(){
+  if(!confirm('카탈로그를 처음 기본값으로 되돌릴까요? 추가·수정한 내용이 모두 사라집니다.')) return;
+  ITEM_DATA  = JSON.parse(JSON.stringify(DEFAULT_ITEM_DATA));
+  DETAIL_CATS = [...DEFAULT_CATS];
+  currentFilter='all';
+  refreshCatalogUI(); reRenderCatalogPanels();
+  showToast('기본값으로 초기화했습니다','♻️');
+}
+
 /* ═══════════ INIT ═══════════ */
 window.onload = () => {
   setDefaults();
+  initAddForm();
+  renderCatTabs();
   loadSavedList();
   renderItems();
   calcTotals();
+  loadCatalogFromServer();   // 로그인되어 있으면 팀 공유 카탈로그로 갱신
 };
 
 function setDefaults(){
@@ -714,7 +1029,7 @@ function setDefaults(){
   const y = today.getFullYear();
   const m = pad(today.getMonth()+1);
   const d = pad(today.getDate());
-  document.getElementById('quoteNumber').textContent = `D-${String(y).slice(2)}${m}${String(quoteCounter).padStart(2,'0')}`;
+  document.getElementById('quoteNumber').value = `D-${String(y).slice(2)}${m}${String(quoteCounter).padStart(2,'0')}`;
   const valid = new Date(today.getTime()+14*86400000);
   document.getElementById('validUntil').value = `${valid.getFullYear()}-${pad(valid.getMonth()+1)}-${pad(valid.getDate())}`;
 }
@@ -745,37 +1060,45 @@ function setBrandColor(color, el){
 }
 
 /* ═══════════ ITEMS ═══════════ */
-function syncCustomCat(sel){
-  const customInput = document.getElementById('newItemCatCustom');
-  customInput.style.display = sel.value==='__custom__' ? 'block' : 'none';
+/* 추가폼 초기화: 구분 드롭다운 + 세부항목 드롭다운 */
+function initAddForm(){
+  document.getElementById('newItemCat2').innerHTML = catOptionsHtml('');
+  document.getElementById('newItemDetail').innerHTML = detailOptionsHtml('','');
+}
+/* 추가폼: 구분 변경 → 세부항목 목록 갱신 */
+function onNewCatChange(){
+  const cat = document.getElementById('newItemCat2').value;
+  document.getElementById('newItemDetail').innerHTML = detailOptionsHtml(cat,'');
+  document.getElementById('newItemNote').value='';
+  document.getElementById('newItemPrice').value='';
+}
+/* 추가폼: 세부항목 변경 → 단가/비고 자동 입력(있을 때만) */
+function onNewDetailChange(){
+  const cat = document.getElementById('newItemCat2').value;
+  const name = document.getElementById('newItemDetail').value;
+  const d = lookupDetail(cat, name);
+  if(d){
+    document.getElementById('newItemPrice').value = d.price ? d.price : '';
+    document.getElementById('newItemNote').value = d.note || '';
+  }
 }
 
 function addItem(){
-  const cat1 = document.getElementById('newItemCat1').value.trim();
-  if(!cat1){ showToast('구분1을 입력해 주세요','⚠️'); return; }
-  const cat2  = document.getElementById('newItemCat2').value.trim();
+  const cat2   = document.getElementById('newItemCat2').value;
+  const detail = document.getElementById('newItemDetail').value;
+  if(!cat2){ showToast('구분을 선택해 주세요','⚠️'); return; }
+  if(!detail){ showToast('세부항목을 선택해 주세요','⚠️'); return; }
   const qty   = parseFloat(document.getElementById('newItemQty').value)||1;
   const times = parseFloat(document.getElementById('newItemTimes').value)||1;
   const price = parseFloat(document.getElementById('newItemPrice').value)||0;
-  const catSel = document.getElementById('newItemCat').value;
-  let cat, catLabel;
-  if(catSel==='__custom__'){
-    catLabel = document.getElementById('newItemCatCustom').value.trim() || '기타';
-    cat = '__custom__:' + catLabel;
-  } else {
-    cat = catSel;
-    catLabel = CAT_LABELS[catSel]||'기타';
-  }
-  items.push({id:Date.now(), cat1, cat2, cat, catLabel, qty, times, unit:'식', price, note:''});
-  document.getElementById('newItemCat1').value='';
-  document.getElementById('newItemCat2').value='';
+  const note  = document.getElementById('newItemNote').value.trim();
+  items.push({id:Date.now(), cat2, detail, qty, times, unit:'식', price, note});
   document.getElementById('newItemPrice').value='';
+  document.getElementById('newItemNote').value='';
   document.getElementById('newItemQty').value='1';
   document.getElementById('newItemTimes').value='1';
-  document.getElementById('newItemCatCustom').value='';
-  document.getElementById('newItemCatCustom').style.display='none';
-  document.getElementById('newItemCat').value='stage';
-  document.getElementById('newItemCat1').focus();
+  document.getElementById('newItemDetail').value='';
+  document.getElementById('newItemCat2').focus();
   renderItems(); calcTotals();
 }
 
@@ -797,82 +1120,52 @@ function updateItem(id,field,value){
 
 function renderItems(){
   const tbody = document.getElementById('itemsBody');
-  const filtered = currentFilter==='all' ? items : items.filter(i=>{
-    if(currentFilter==='etc') return i.cat==='etc'||i.cat.startsWith('__custom__');
-    return i.cat===currentFilter;
-  });
+  const filtered = currentFilter==='all' ? items : items.filter(i=>i.cat2===currentFilter);
   if(items.length===0){
     tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div class="icon">📋</div><p>아래에서 품목을 추가해 주세요</p></div></td></tr>`;
     return;
   }
-  const getCatLabel = item => {
-    if(item.catLabel) return item.catLabel;
-    if(item.cat && item.cat.startsWith('__custom__:')) return item.cat.replace('__custom__:','');
-    return CAT_LABELS[item.cat]||item.cat||'기타';
-  };
-  const catOptions = Object.entries(CAT_LABELS).map(([v,l])=>
-    `<option value="${v}">${l}</option>`).join('');
-
   tbody.innerHTML = filtered.map(item => {
     const times = item.times||1;
     const amt = item.qty * times * item.price;
-    const isCustom = item.cat && item.cat.startsWith('__custom__');
     return `<tr data-id="${item.id}">
-      <td>
-        <input class="iname" value="${escHtml(item.cat1||'')}" placeholder="구분1"
-          onchange="updateItem(${item.id},'cat1',this.value)" />
-      </td>
-      <td>
-        <input class="iname" value="${escHtml(item.cat2||'')}" placeholder="구분2"
-          onchange="updateItem(${item.id},'cat2',this.value)" />
-        <input class="inote" value="${escHtml(item.note)}" placeholder="비고"
-          onchange="updateItem(${item.id},'note',this.value)" />
-      </td>
-      <td>
-        ${isCustom
-          ? `<input class="ni" value="${escHtml(getCatLabel(item))}" style="width:100%"
-               onchange="updateItem(${item.id},'catLabel',this.value)" />`
-          : `<select class="catsel" onchange="updateCatSel(${item.id},this)">
-               ${catOptions}
-               <option value="__custom__">직접 입력...</option>
-             </select>`
-        }
-      </td>
-      <td><input type="number" class="ni qty" value="${item.qty}" min="0"
-        onchange="updateItem(${item.id},'qty',this.value)" style="width:100%" /></td>
-      <td><input type="number" class="ni qty" value="${times}" min="1"
-        onchange="updateItem(${item.id},'times',this.value)" style="width:100%" /></td>
+      <td><select class="catsel" onchange="updateItemCat(${item.id},this.value)">${catOptionsHtml(item.cat2||'')}</select></td>
+      <td><select class="catsel" onchange="updateItemDetail(${item.id},this.value)">${detailOptionsHtml(item.cat2||'', item.detail||'')}</select></td>
+      <td><input type="number" class="ni qty" value="${item.qty}" min="0" max="999"
+        oninput="this.value=this.value.slice(0,3)" onchange="updateItem(${item.id},'qty',this.value)" style="width:100%" /></td>
+      <td><input type="number" class="ni qty" value="${times}" min="1" max="999"
+        oninput="this.value=this.value.slice(0,3)" onchange="updateItem(${item.id},'times',this.value)" style="width:100%" /></td>
       <td><input class="ni" value="${escHtml(item.unit||'식')}" style="width:50px;text-align:center"
         onchange="updateItem(${item.id},'unit',this.value)" /></td>
       <td><input type="number" class="ni" value="${item.price}" min="0"
         onchange="updateItem(${item.id},'price',this.value)" style="width:100%" /></td>
       <td class="amtcell">${fmtKRW(amt)}</td>
+      <td><input class="iname" value="${escHtml(item.note||'')}" placeholder="비고"
+        onchange="updateItem(${item.id},'note',this.value)" /></td>
       <td><button class="delbtn" onclick="deleteItem(${item.id})">✕</button></td>
     </tr>`;
   }).join('');
-
-  filtered.forEach(item => {
-    if(!item.cat.startsWith('__custom__')){
-      const sel = document.querySelector(`tr[data-id="${item.id}"] .catsel`);
-      if(sel) sel.value = item.cat;
-    }
-  });
 }
 
-function updateCatSel(id, sel){
+/* 인라인: 구분 변경 → 세부항목 목록 초기화 후 재렌더 */
+function updateItemCat(id, val){
   const item = items.find(i=>i.id===id);
   if(!item) return;
-  if(sel.value==='__custom__'){
-    const newLabel = prompt('세부항목명을 입력하세요:','');
-    if(newLabel && newLabel.trim()){
-      item.cat = '__custom__:' + newLabel.trim();
-      item.catLabel = newLabel.trim();
-    }
-  } else {
-    item.cat = sel.value;
-    item.catLabel = CAT_LABELS[sel.value]||'기타';
-  }
+  item.cat2 = val;
+  item.detail = '';
   renderItems();
+}
+/* 인라인: 세부항목 변경 → 단가/비고 자동 입력(있을 때만) */
+function updateItemDetail(id, val){
+  const item = items.find(i=>i.id===id);
+  if(!item) return;
+  item.detail = val;
+  const d = lookupDetail(item.cat2, val);
+  if(d){
+    if(d.price) item.price = d.price;   // 단가 있으면 자동, 없으면 기존값(수동) 유지
+    if(d.note)  item.note  = d.note;
+  }
+  renderItems(); calcTotals();
 }
 
 /* ═══════════ TOTALS ═══════════ */
@@ -922,10 +1215,20 @@ function toggleVAT(el){
 }
 
 /* ═══════════ FILTER ═══════════ */
+function renderCatTabs(){
+  const box = document.getElementById('cattabs');
+  if(!box) return;
+  const tabs = ['all', ...DETAIL_CATS];
+  box.innerHTML = tabs.map(c=>{
+    const label = c==='all' ? '전체' : c;
+    const active = (currentFilter===c) ? ' active' : '';
+    return `<button class="cattab${active}" onclick="filterCat('${escHtml(c).replace(/'/g,"\\'")}',this)">${escHtml(label)}</button>`;
+  }).join('');
+}
 function filterCat(cat,btn){
   currentFilter=cat;
   document.querySelectorAll('.cattab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   renderItems();
 }
 
@@ -946,7 +1249,7 @@ function syncPreview(){
 
 /* ═══════════ BUILD PREVIEW ═══════════ */
 function buildPreview(){
-  const qNo = document.getElementById('quoteNumber').textContent;
+  const qNo = document.getElementById('quoteNumber').value;
   const supplier = {
     name: v('supplierName') || '플래니어스(planinus)',
     bizNo: v('supplierBizNo') || '',
@@ -1002,25 +1305,19 @@ function buildPreview(){
     ? `<img src="${logoDataUrl}" />`
     : `<div class="logo-placeholder">${escHtml(supplier.name)}<small>arae itneun geobeul dake gabi(gi) planinus</small></div>`;
 
-  const getCatLabel = item => {
-    if(item.catLabel) return item.catLabel;
-    if(item.cat && item.cat.startsWith('__custom__:')) return item.cat.replace('__custom__:','');
-    return CAT_LABELS[item.cat]||item.cat||'기타';
-  };
-
   const itemRows = items.length===0
     ? `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">품목이 없습니다</td></tr>`
     : items.map((item,idx)=>{
         const times = item.times||1;
         const amt = item.qty*times*item.price;
         return `<tr>
-          <td contenteditable="true" style="white-space:normal;word-break:keep-all">${escHtml(item.cat1||'')}</td>
-          <td contenteditable="true" style="white-space:normal;word-break:keep-all">${escHtml(item.cat2||'')}${item.note?`<br><small style="color:#888;font-size:10px">${escHtml(item.note)}</small>`:''}</td>
-          <td contenteditable="true" style="white-space:normal;word-break:keep-all">${escHtml(getCatLabel(item))}</td>
+          <td contenteditable="true" style="white-space:normal;word-break:keep-all">${escHtml(item.cat2||'')}</td>
+          <td contenteditable="true" style="white-space:normal;word-break:keep-all">${escHtml(item.detail||'')}</td>
           <td contenteditable="true" style="text-align:center;white-space:nowrap">${item.qty}</td>
           <td contenteditable="true" style="text-align:center;white-space:nowrap">${times}</td>
           <td contenteditable="true" style="text-align:right;white-space:nowrap">${fmtKRW(item.price)}</td>
           <td contenteditable="true" style="text-align:right;white-space:nowrap;font-weight:700">${fmtKRW(amt)}</td>
+          <td contenteditable="true" style="white-space:normal;word-break:keep-all;font-size:11px;color:#555">${escHtml(item.note||'')}</td>
         </tr>`;
       }).join('');
 
@@ -1096,13 +1393,13 @@ function buildPreview(){
     <table class="pv-items-table" style="table-layout:fixed;width:100%">
       <thead>
         <tr>
-          <th style="width:17%;text-align:left">구분1</th>
-          <th style="width:17%;text-align:left">구분2</th>
-          <th style="width:22%;text-align:left">세부항목</th>
-          <th style="width:5%;text-align:center">수량</th>
-          <th style="width:5%;text-align:center">횟수</th>
-          <th style="width:17%;text-align:right">단가</th>
-          <th style="width:17%;text-align:right">금액</th>
+          <th style="width:16%;text-align:left">구분</th>
+          <th style="width:26%;text-align:left">세부항목</th>
+          <th style="width:6%;text-align:center">수량</th>
+          <th style="width:6%;text-align:center">횟수</th>
+          <th style="width:15%;text-align:right">단가</th>
+          <th style="width:15%;text-align:right">금액</th>
+          <th style="width:16%;text-align:left">비고</th>
         </tr>
       </thead>
       <tbody>${itemRows}</tbody>
@@ -1143,7 +1440,7 @@ async function qapi(path, opts={}){
 async function saveQuote(){
   if(items.length===0){ showToast('품목을 먼저 추가해 주세요','⚠️'); return; }
   if(!qToken()){ showToast('포털에서 로그인 후 이용해 주세요','⚠️'); return; }
-  const qNo = document.getElementById('quoteNumber').textContent;
+  const qNo = document.getElementById('quoteNumber').value;
   const clientName = v('clientName')||'고객미입력';
   const eventName = v('eventName')||'행사명미입력';
   const total = items.reduce((s,i)=>s+i.qty*(i.times||1)*i.price,0);
@@ -1205,12 +1502,20 @@ async function loadQuote(id){
   catch(err){ showToast(err.message,'⚠️'); return; }
   const s = res.data || {};
   currentQuoteId = id;
-  items=[...(s.items||[])];
+  items=(s.items||[]).map(it=>{
+    // 구버전 호환: cat/catLabel → cat2/detail
+    if(it.detail===undefined){
+      it.detail = it.catLabel || (typeof it.cat==='string'&&it.cat.startsWith('__custom__:') ? it.cat.replace('__custom__:','') : '');
+    }
+    if(it.cat2===undefined) it.cat2='';
+    if(it.note===undefined) it.note='';
+    return it;
+  });
   vatEnabled = s.vatEnabled!==false;
   logoDataUrl=s.logoDataUrl||'';
   brandColor=s.brandColor||'#1e9b8a';
   document.getElementById('vatToggle').classList.toggle('on',vatEnabled);
-  document.getElementById('quoteNumber').textContent=s.quoteNo||res.quote_no||'';
+  document.getElementById('quoteNumber').value=s.quoteNo||res.quote_no||'';
   document.getElementById('clientName').value=s.clientName||'';
   document.getElementById('eventName').value=s.eventName||'';
   if(logoDataUrl){
@@ -1275,7 +1580,7 @@ function buildPdfDoc(){
     if(!wasActive){ pv.style.position='absolute'; pv.style.left='-10000px'; pv.style.display='block'; }
     buildPreview();
     const el = document.getElementById('printPreview');
-    const qNo = document.getElementById('quoteNumber').textContent;
+    const qNo = document.getElementById('quoteNumber').value;
     const restore = () => { if(!wasActive){ pv.style.position=prev.pos; pv.style.left=prev.left; pv.style.display=prev.disp; } };
     html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false }).then(canvas => {
       const { jsPDF } = window.jspdf;
@@ -1302,7 +1607,10 @@ function buildPdfDoc(){
 
 function exportPDF(){
   buildPdfDoc().then(({pdf, qNo}) => {
-    pdf.save(`견적서_${qNo}.pdf`);
+    const ev  = v('eventName')||'행사명';
+    const sup = v('supplierName')||'플래니어스';
+    const fname = sanitizeFilename(`${qNo}_${ev}_${sup}_견적서`) + '.pdf';
+    pdf.save(fname);
     showToast('PDF 저장 완료!','📄');
   }).catch(err => { showToast('PDF 변환 중 오류 발생','❌'); console.error(err); });
 }
@@ -1334,11 +1642,6 @@ async function downloadQuotePdf(id){
 
 function exportExcel(){
   if(items.length===0){ showToast('품목을 먼저 추가해 주세요','⚠️'); return; }
-  const getCatLabel = item => {
-    if(item.catLabel) return item.catLabel;
-    if(item.cat && item.cat.startsWith('__custom__:')) return item.cat.replace('__custom__:','');
-    return CAT_LABELS[item.cat]||item.cat||'기타';
-  };
   const subtotal=items.reduce((s,i)=>s+i.qty*(i.times||1)*i.price,0);
   const discType=document.getElementById('discountType').value;
   const discVal=parseFloat(document.getElementById('discountVal').value)||0;
@@ -1347,7 +1650,7 @@ function exportExcel(){
   const afterDisc=subtotal-discAmt;
   const vatAmt=vatEnabled?afterDisc*0.1:0;
   const total=afterDisc+vatAmt;
-  const qNo=document.getElementById('quoteNumber').textContent;
+  const qNo=document.getElementById('quoteNumber').value;
 
   const ws_data=[
     ['행사 견적서'],
@@ -1356,10 +1659,10 @@ function exportExcel(){
     ['행사명:',v('eventName')],
     ['행사일시:',v('eventDate')],
     [''],
-    ['No.','품목명','카테고리','수량','횟수','단위','단가(원)','금액(원)','비고'],
+    ['No.','구분','세부항목','수량','횟수','단위','단가(원)','금액(원)','비고'],
     ...items.map((item,i)=>{
       const times=item.times||1;
-      return [i+1,item.name,getCatLabel(item),item.qty,times,item.unit||'식',item.price,item.qty*times*item.price,item.note];
+      return [i+1,item.cat2||'',item.detail||'',item.qty,times,item.unit||'식',item.price,item.qty*times*item.price,item.note||''];
     }),
     [''],
     ['','','','','','','소계',subtotal,''],
@@ -1370,13 +1673,16 @@ function exportExcel(){
 
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet(ws_data);
-  ws['!cols']=[{wch:5},{wch:30},{wch:12},{wch:7},{wch:7},{wch:7},{wch:14},{wch:16},{wch:20}];
+  ws['!cols']=[{wch:5},{wch:14},{wch:28},{wch:7},{wch:7},{wch:7},{wch:14},{wch:16},{wch:20}];
   XLSX.utils.book_append_sheet(wb,ws,'견적서');
   XLSX.writeFile(wb,`견적서_${qNo}.xlsx`);
   showToast('엑셀 저장 완료!','📊');
 }
 
 /* ═══════════ UTILS ═══════════ */
+function sanitizeFilename(s){
+  return String(s||'').replace(/[\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim() || '견적서';
+}
 function v(id){ const el=document.getElementById(id); return el?(el.value||''):''; }
 function fmtKRW(n){ return '₩'+Math.round(n).toLocaleString('ko-KR'); }
 function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

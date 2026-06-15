@@ -956,7 +956,7 @@ function go(page){
   $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-'+page));
   if(page === 'quote'){
     const f = $('#quote-frame');
-    if(f && !f.src) f.src = 'quote.html';        // 최초 진입 시에만 로드
+    if(f && !f.src) f.src = 'quote.html?v=' + Date.now();   // 캐시 무시하고 항상 최신 로드
   }
   if(page === 'users') loadUsers();
   window.scrollTo({top:0});
