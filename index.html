@@ -1400,30 +1400,48 @@ $('#add-partner-btn').addEventListener('click', () => {
 });
 
 /* ── 첨부파일 업로드 (Firebase Storage) ── */
+/* 업로드 진행/완료/실패 문구를 슬롯(또는 상단 사업자등록증 박스)에 표시 */
+function setSlotStatus(slot, text){
+  if(slot==='biz'){ const el=$('#biz-name'); if(el) el.textContent=text; }
+  const row = document.querySelector('.upslot[data-slot="'+slot+'"]');
+  if(row){ const sp=row.querySelector('.fmeta span'); if(sp) sp.textContent=text; }
+}
 function updateSlotUI(slot){
   const f = partnerFiles[slot];
-  if(slot==='biz'){ const el=$('#biz-name'); if(el) el.textContent = f?f.name:'사업자등록증 파일을 선택하세요'; }
+  if(slot==='biz'){ const el=$('#biz-name'); if(el) el.textContent = f?('✓ '+f.name):'사업자등록증 파일을 선택하세요'; }
   const row = document.querySelector('.upslot[data-slot="'+slot+'"]'); if(!row) return;
   row.classList.toggle('has', !!f);
-  const sp = row.querySelector('.fmeta span'); if(sp) sp.textContent = f?f.name:'이미지·PDF·한글·워드·엑셀 첨부 가능';
+  const sp = row.querySelector('.fmeta span'); if(sp) sp.textContent = f?('✓ 첨부 완료 · '+f.name):'이미지·PDF·한글·워드·엑셀 첨부 가능';
   const del = row.querySelector('.delx'); if(del) del.style.display = f?'block':'none';
 }
+/* 파일명에서 Storage 경로에 문제될 수 있는 문자를 정리 */
+function safeFileName(name){ return String(name).replace(/[#?\[\]*]/g,'_').replace(/\s+/g,'_'); }
 async function uploadPartnerFile(slot, input){
   const f = input.files && input.files[0]; if(!f) return;
   if(slot==='biz') partnerBizFile = f;
   const fbh = window.__planinusFirebase;
   if(!fbh || !fbh.storage){ toast('파일 저장소(Storage)가 아직 활성화되지 않았습니다.', true); input.value=''; return; }
-  if(slot==='biz'){ const el=$('#biz-name'); if(el) el.textContent='업로드 중… '+f.name; }
-  else { const row=document.querySelector('.upslot[data-slot="'+slot+'"]'); if(row){ const sp=row.querySelector('.fmeta span'); if(sp) sp.textContent='업로드 중…'; } }
+  setSlotStatus(slot, '업로드 중… 0%');
   try{
-    const path = 'partners/'+partnerScope+'/'+slot+'-'+Date.now()+'-'+f.name;
+    const path = 'partners/'+partnerScope+'/'+slot+'-'+Date.now()+'-'+safeFileName(f.name);
     const ref = fbh.storage.ref().child(path);
-    const snap = await ref.put(f);
-    const url = await snap.ref.getDownloadURL();
+    const task = ref.put(f);
+    await new Promise((resolve, reject)=>{
+      task.on('state_changed',
+        s=>{ const pct = s.totalBytes ? Math.round(s.bytesTransferred/s.totalBytes*100) : 0; setSlotStatus(slot, '업로드 중… '+pct+'%'); },
+        err=>reject(err),
+        ()=>resolve()
+      );
+    });
+    const url = await task.snapshot.ref.getDownloadURL();
     partnerFiles[slot] = {name:f.name, url:url, path:path};
     updateSlotUI(slot);
-    toast(FILE_DEFS[slot]+' 업로드 완료');
-  }catch(e){ updateSlotUI(slot); toast('업로드 실패: '+(e&&e.message||e), true); }
+    toast(FILE_DEFS[slot]+' 업로드 완료 — 저장을 눌러야 반영됩니다');
+  }catch(e){
+    setSlotStatus(slot, '업로드 실패 — 다시 시도해 주세요');
+    updateSlotUI(slot);
+    toast('업로드 실패: '+(e&&e.message||e), true);
+  }
   input.value='';
 }
 async function removePartnerFile(slot){
@@ -1443,6 +1461,7 @@ function quoteBlock(){
       <button class="ubtn" type="button" onclick="document.getElementById('file-quote').click()">＋ 추가</button>
       <input type="file" id="file-quote" hidden multiple accept="image/*,application/pdf,.pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="uploadQuoteFiles(this)">
     </div>
+    <div id="quote-status" style="font-size:.78rem;color:var(--teal);display:none"></div>
     <div id="quote-list">${renderQuoteRows()}</div>
   </div>`;
 }
@@ -1461,18 +1480,30 @@ async function uploadQuoteFiles(input){
   const fbh = window.__planinusFirebase;
   if(!fbh || !fbh.storage){ toast('파일 저장소(Storage)가 아직 활성화되지 않았습니다.', true); input.value=''; return; }
   if(!partnerFiles.quote) partnerFiles.quote=[];
+  const statusEl = $('#quote-status');
+  const setStatus = t=>{ if(statusEl){ statusEl.style.display = t?'block':'none'; statusEl.textContent = t||''; } };
   let ok=0;
-  for(const f of files){
+  for(let i=0;i<files.length;i++){
+    const f = files[i];
     try{
-      const path = 'partners/'+partnerScope+'/quote-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)+'-'+f.name;
+      setStatus('업로드 중… ('+(i+1)+'/'+files.length+') '+f.name+' · 0%');
+      const path = 'partners/'+partnerScope+'/quote-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)+'-'+safeFileName(f.name);
       const ref = fbh.storage.ref().child(path);
-      const snap = await ref.put(f);
-      const url = await snap.ref.getDownloadURL();
+      const task = ref.put(f);
+      await new Promise((resolve, reject)=>{
+        task.on('state_changed',
+          s=>{ const pct = s.totalBytes ? Math.round(s.bytesTransferred/s.totalBytes*100) : 0; setStatus('업로드 중… ('+(i+1)+'/'+files.length+') '+f.name+' · '+pct+'%'); },
+          err=>reject(err),
+          ()=>resolve()
+        );
+      });
+      const url = await task.snapshot.ref.getDownloadURL();
       partnerFiles.quote.push({name:f.name, url:url, path:path, uploaded_at:Date.now()});
       renderQuoteListUI(); ok++;
-    }catch(e){ toast('업로드 실패: '+(e&&e.message||e), true); }
+    }catch(e){ setStatus(''); toast('업로드 실패: '+(e&&e.message||e), true); }
   }
-  if(ok) toast(ok+'개 견적서를 추가했습니다.');
+  setStatus(ok? ('✓ '+ok+'개 업로드 완료 — 저장을 눌러야 반영됩니다') : '');
+  if(ok) toast(ok+'개 견적서 업로드 완료 — 저장을 눌러 반영하세요');
   input.value='';
 }
 async function removeQuote(i){
