@@ -1311,10 +1311,10 @@ function fileSlot(k){
   const f = partnerFiles[k];
   return `<div class="upslot${f?' has':''}" data-slot="${k}">
     <div class="fic">${FILE_ICON[k]}</div>
-    <div class="fmeta"><b>${FILE_DEFS[k]}</b><span>${f?esc(f.name):'PDF·이미지 첨부 가능'}</span></div>
+    <div class="fmeta"><b>${FILE_DEFS[k]}</b><span>${f?esc(f.name):'이미지·PDF·한글·워드·엑셀 첨부 가능'}</span></div>
     <button class="ubtn" type="button" onclick="document.getElementById('file-${k}').click()">파일 선택</button>
     <button class="delx" type="button" title="제거" onclick="removePartnerFile('${k}')" style="display:${f?'block':'none'}">×</button>
-    <input type="file" id="file-${k}" hidden accept="image/*,application/pdf" onchange="uploadPartnerFile('${k}',this)">
+    <input type="file" id="file-${k}" hidden accept="image/*,application/pdf,.pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="uploadPartnerFile('${k}',this)">
   </div>`;
 }
 function openPartnerModal(id){
@@ -1348,7 +1348,7 @@ function openPartnerModal(id){
               <button class="ubtn ai" type="button" id="ai-btn" onclick="analyzePartnerBiz()">✨ AI 분석</button>
             </div>
           </div>
-          <input type="file" id="file-biz" hidden accept="image/*,application/pdf" onchange="uploadPartnerFile('biz',this)">
+          <input type="file" id="file-biz" hidden accept="image/*,application/pdf,.pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="uploadPartnerFile('biz',this)">
           <div class="ai-status" id="ai-status"></div>
         </div>
       </div>
@@ -1405,7 +1405,7 @@ function updateSlotUI(slot){
   if(slot==='biz'){ const el=$('#biz-name'); if(el) el.textContent = f?f.name:'사업자등록증 파일을 선택하세요'; return; }
   const row = document.querySelector('.upslot[data-slot="'+slot+'"]'); if(!row) return;
   row.classList.toggle('has', !!f);
-  const sp = row.querySelector('.fmeta span'); if(sp) sp.textContent = f?f.name:'PDF·이미지 첨부 가능';
+  const sp = row.querySelector('.fmeta span'); if(sp) sp.textContent = f?f.name:'이미지·PDF·한글·워드·엑셀 첨부 가능';
   const del = row.querySelector('.delx'); if(del) del.style.display = f?'block':'none';
 }
 async function uploadPartnerFile(slot, input){
@@ -1439,9 +1439,9 @@ function quoteBlock(){
   return `<div class="upslot quote-block${has?' has':''}" style="flex-direction:column;align-items:stretch;gap:10px">
     <div style="display:flex;align-items:center;gap:11px">
       <div class="fic">견적</div>
-      <div class="fmeta"><b>견적서 <span style="color:#9DB3AE;font-weight:600">· 누적 보관</span></b><span>여러 개를 계속 추가할 수 있습니다 · PDF·이미지</span></div>
+      <div class="fmeta"><b>견적서 <span style="color:#9DB3AE;font-weight:600">· 누적 보관</span></b><span>여러 개를 계속 추가할 수 있습니다 · 이미지·PDF·한글·워드·엑셀</span></div>
       <button class="ubtn" type="button" onclick="document.getElementById('file-quote').click()">＋ 추가</button>
-      <input type="file" id="file-quote" hidden multiple accept="image/*,application/pdf" onchange="uploadQuoteFiles(this)">
+      <input type="file" id="file-quote" hidden multiple accept="image/*,application/pdf,.pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="uploadQuoteFiles(this)">
     </div>
     <div id="quote-list">${renderQuoteRows()}</div>
   </div>`;
