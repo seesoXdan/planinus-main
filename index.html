@@ -1916,71 +1916,76 @@ const RM_PHASES = [
 ];
 const rmWon = n => n ? '₩'+Number(n).toLocaleString('ko-KR') : '₩0';
 
-/* 표시 구간
-   - rmFocusMonth!=null : 그 달 1일~말일을 '일(day)' 단위로 (날짜를 촘촘히)
-   - 기본 : 현재 달 1일 ~ 12/31 을 '주(week)' 단위로 (지난 달 펼치면 1/1 ~ 12/31)
-   반환 unit = 한 칸의 일수(1=일, 7=주) */
-function rmRange(){
+/* 표시 컬럼 만들기
+   - rmFocusMonth!=null : 그 달 1일~말일을 '일(day)' 단위 칸으로
+   - 기본 : 현재 달 ~ 12월을 '주' 단위로, 단 주가 월 경계를 넘지 않도록 월말에서 끊음
+     (그래야 8/2 같은 날이 8월에 표시됨)
+   각 칸 = {s, e, month, day?, weekend?} */
+function rmColumns(){
+  const cols = [];
   if(rmFocusMonth !== null){
-    const start = new Date(RM_YEAR, rmFocusMonth, 1);
-    const count = new Date(RM_YEAR, rmFocusMonth + 1, 0).getDate();   // 그 달 일수
-    return {start, count, unit:1};
+    const mm = String(rmFocusMonth+1).padStart(2,'0');
+    const last = new Date(RM_YEAR, rmFocusMonth+1, 0).getDate();
+    for(let d=1; d<=last; d++){
+      const ds = `${RM_YEAR}-${mm}-${String(d).padStart(2,'0')}`;
+      const dow = new Date(ds+'T00:00:00').getDay();
+      cols.push({s:ds, e:ds, month:rmFocusMonth, day:d, weekend:dow===0||dow===6});
+    }
+    return {cols, unit:'day'};
   }
-  const end = new Date(RM_YEAR, 11, 31);
   const now = new Date();
-  const from = (!rmShowPast && now.getFullYear() === RM_YEAR)
-    ? new Date(RM_YEAR, now.getMonth(), 1) : new Date(RM_YEAR, 0, 1);
-  const start = new Date(from);
-  start.setDate(start.getDate() - ((start.getDay()+6)%7));            // 직전 월요일
-  const count = Math.max(1, Math.ceil(((end - start)/RM_MSDAY + 1)/7));
-  return {start, count, unit:7};
+  const startMonth = (!rmShowPast && now.getFullYear()===RM_YEAR) ? now.getMonth() : 0;
+  let cur = new Date(RM_YEAR, startMonth, 1);
+  const end = new Date(RM_YEAR, 11, 31);
+  while(cur <= end){
+    const monthEnd = new Date(RM_YEAR, cur.getMonth()+1, 0);
+    const dow = (cur.getDay()+6)%7;                       // 월=0
+    let colEnd = new Date(cur); colEnd.setDate(colEnd.getDate() + (6-dow));  // 그 주 일요일
+    if(colEnd > monthEnd) colEnd = new Date(monthEnd);    // 월 경계에서 끊기
+    if(colEnd > end) colEnd = new Date(end);
+    cols.push({s:fmt(cur), e:fmt(colEnd), month:cur.getMonth()});
+    cur = new Date(colEnd); cur.setDate(cur.getDate()+1);
+  }
+  return {cols, unit:'week'};
 }
-const rmPos = (ds, start, unit) => ds ? (new Date(ds+'T00:00:00') - start)/(unit*RM_MSDAY) : 0;
 
 async function loadRoadmap(){
   try{ ROADMAP = await api('/roadmap') || []; renderRoadmap(); }
   catch(err){ /* 권한오류 등은 조용히 무시 */ }
 }
 
-function rmGridCols(count, unit){ return `repeat(${count},minmax(${unit===1?16:18}px,1fr))`; }
+function rmGridCols(n, unit){ return `repeat(${n},minmax(${unit==='day'?16:20}px,1fr))`; }
 
-function rmBuildHeader(start, count, unit){
-  let mh='';
-  if(rmFocusMonth !== null){
-    mh = `<div class="rm-mo on" style="grid-column:span ${count}" onclick="rmFocus(${rmFocusMonth})" title="클릭하면 전체 보기">${rmFocusMonth+1}월 · 전체 보기로</div>`;
-  } else {
-    let runM=null, runStart=1;
-    const flush = end => { if(runM!==null){ mh += `<div class="rm-mo" onclick="rmFocus(${runM})" title="클릭하면 ${runM+1}월만 보기" style="grid-column:span ${end-runStart+1}">${runM+1}월</div>`; } };
-    for(let w=1; w<=count; w++){
-      const d = new Date(start.getTime() + ((w-1)*7+3)*RM_MSDAY);  // 해당 주 목요일 기준
-      if(d.getMonth()!==runM){ flush(w-1); runM=d.getMonth(); runStart=w; }
-    }
-    flush(count);
+function rmBuildHeader(cols, unit){
+  let mh='', i=0;
+  while(i < cols.length){
+    const m = cols[i].month; let j=i; while(j<cols.length && cols[j].month===m) j++;
+    const span = j-i;
+    mh += (rmFocusMonth!==null)
+      ? `<div class="rm-mo on" style="grid-column:span ${span}" onclick="rmFocus(${m})" title="클릭하면 전체 보기">${m+1}월 · 전체 보기로</div>`
+      : `<div class="rm-mo" style="grid-column:span ${span}" onclick="rmFocus(${m})" title="클릭하면 ${m+1}월만 보기">${m+1}월</div>`;
+    i = j;
   }
-  const cols = rmGridCols(count, unit);
+  const gcols = rmGridCols(cols.length, unit);
   const mEl=$('#rm-months'), wEl=$('#rm-weeks');
-  mEl.style.gridTemplateColumns = cols; mEl.innerHTML = mh;
+  mEl.style.gridTemplateColumns = gcols; mEl.innerHTML = mh;
   let wh='';
-  for(let i=1; i<=count; i++){
-    if(unit === 1){
-      const d = new Date(start.getTime() + (i-1)*RM_MSDAY);
-      const wknd = d.getDay()===0 || d.getDay()===6;
-      wh += `<div class="rm-wk d${wknd?' we':''}">${d.getDate()}</div>`;
-    } else {
-      wh += `<div class="rm-wk ${i%4===1?'q':''}">${i%4===1||i===count?'W'+i:'·'}</div>`;
-    }
-  }
-  wEl.style.gridTemplateColumns = cols; wEl.innerHTML = wh;
+  cols.forEach(c=>{
+    wh += (unit==='day')
+      ? `<div class="rm-wk d${c.weekend?' we':''}">${c.day}</div>`
+      : `<div class="rm-wk">${+c.s.slice(5,7)}.${+c.s.slice(8,10)}</div>`;
+  });
+  wEl.style.gridTemplateColumns = gcols; wEl.innerHTML = wh;
 }
 
 function renderRoadmap(){
   const isAdmin = ME && ME.role === 'admin';
-  const {start, count, unit} = rmRange();
-  const cols = rmGridCols(count, unit);
-  const gantt = $('.rm-gantt'); if(gantt) gantt.style.minWidth = Math.max(720, count*26)+'px';
+  const {cols, unit} = rmColumns();
+  const gcols = rmGridCols(cols.length, unit);
+  const gantt = $('.rm-gantt'); if(gantt) gantt.style.minWidth = Math.max(720, cols.length*(unit==='day'?24:30))+'px';
   const tgl = $('#rm-toggle-past');
   if(tgl) tgl.textContent = (rmFocusMonth!==null) ? '← 전체 보기' : (rmShowPast ? '지난 달 접기' : '＋ 지난 달 보기');
-  rmBuildHeader(start, count, unit);
+  rmBuildHeader(cols, unit);
   const rows = $('#rm-rows');
   if(!ROADMAP.length){
     rows.innerHTML = `<div class="rm-empty">${isAdmin ? '아직 등록된 프로젝트가 없습니다. 캘린더에 행사를 등록하거나 ＋ 프로젝트 추가로 시작하세요.' : '아직 등록된 프로젝트가 없습니다.'}</div>`;
@@ -2011,28 +2016,25 @@ function renderRoadmap(){
     }
     rows.innerHTML = list.map(p => {
       let cells='';
-      for(let i=0;i<count;i++){
+      cols.forEach(c => {
         let color='', tip='';
-        if(unit === 1){                                    // 일 단위: 그 날짜 칸을 색칠 (행사운영 우선)
-          const dts = fmt(new Date(start.getTime() + i*RM_MSDAY));
-          const cover = RM_PHASES.filter(x=>{ const v=p.phases&&p.phases[x.key]; return v&&v.s&&v.e&&dts>=v.s&&dts<=v.e; });
+        if(unit === 'day'){                                // 일 단위: 모든 단계 색칠 (행사운영 우선)
+          const cover = RM_PHASES.filter(x=>{ const v=p.phases&&p.phases[x.key]; return v&&v.s&&v.e&&c.s>=v.s&&c.s<=v.e; });
           const pick = cover.find(x=>x.key==='event') || cover[0];
           if(pick){ const v=p.phases[pick.key]; color=pick.sw; tip=`${pick.label} ${v.s}~${v.e}`; }
         } else {                                            // 주 단위(전체 보기): 행사 운영일만 표시
-          const ws = fmt(new Date(start.getTime() + i*7*RM_MSDAY));
-          const we = fmt(new Date(start.getTime() + (i*7+6)*RM_MSDAY));
           const v = p.phases && p.phases.event;
-          if(v&&v.s&&v.e&&v.s<=we&&v.e>=ws){ color='var(--coral)'; tip=`행사 운영(행사일) ${v.s}~${v.e}`; }
+          if(v&&v.s&&v.e&&v.s<=c.e&&v.e>=c.s){ color='var(--coral)'; tip=`행사 운영(행사일) ${v.s}~${v.e}`; }
         }
         cells += `<div class="cell${color?' f':''}"${color?` style="background:${color};border-color:${color}" title="${esc(tip)}"`:''}></div>`;
-      }
+      });
       const actions = isAdmin ? `<div class="rm-actions">
           <button class="rm-ibtn" title="수정" onclick="openRoadmapModal('${p.id}')">✎</button>
           <button class="rm-ibtn del" title="삭제" onclick="deleteRoadmap('${p.id}')">🗑</button>
         </div>` : '<div></div>';
       return `<div class="rm-row">
         <div class="rm-name rm-name-link" title="클릭하면 상세 보기" onclick="openRoadmapDetail('${p.id}')"><span class="dot"></span>${esc(p.name)}</div>
-        <div class="rm-track" style="grid-template-columns:${cols}">${cells}</div>
+        <div class="rm-track" style="grid-template-columns:${gcols}">${cells}</div>
         ${actions}
       </div>`;
     }).join('');
@@ -2159,8 +2161,8 @@ $('#rm-import-btn').addEventListener('click', async ()=>{
   if(!confirm('캘린더의 행사 일정을 기준으로 로드맵을 동기화합니다.\n중복되거나 캘린더와 다른 항목은 정리됩니다. 계속할까요?')) return;
   try{
     const r = await api('/roadmap/sync-events', {method:'POST'});
-    const added=r&&r.added||0, removed=r&&r.removed||0, merged=r&&r.merged||0;
-    toast(`동기화 완료 · 추가 ${added} · 정리 ${removed}${merged?` · 리허설 ${merged}합침`:''}`);
+    const added=r&&r.added||0, merged=r&&r.merged||0, combined=r&&r.combined||0;
+    toast(`동기화 완료 · 행사 ${added}건${merged?` · 리허설 ${merged}합침`:''}${combined?` · 중복 ${combined}합침`:''}`);
     await loadAll();
   }catch(err){ toast(err.message, true); }
 });

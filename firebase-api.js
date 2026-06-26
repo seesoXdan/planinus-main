@@ -360,43 +360,26 @@
       rdoc.id = rref.id;
       return J(rdoc);
     }
-    // 캘린더 기준 재동기화: '행사' 일정을 로드맵에 맞추고, 중복/낡은 항목을 정리한다.
+    // 캘린더 기준 재구성: 로드맵을 비우고 현재 캘린더의 '행사'로 다시 만든다.
+    //  → 중복·낡은·없는 달의 잔여 항목이 모두 정리되어 로드맵이 캘린더와 정확히 일치한다.
     if (path === '/roadmap/sync-events' && method === 'POST') {
       var sm = await requireAdmin();
       var evAll = await db.collection('events').get();
       var rmAll = await db.collection('roadmap').get();
-      var events = evAll.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; })
-        .filter(function (e) { return (e.category || '') === 'event'; });
-      var rms = rmAll.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; });
-      function matchesEvent(d, E) {
-        return d.name === E.title && d.phases && d.phases.event && d.phases.event.s === E.date;
+      var added = 0, removed = 0;
+      // 1) 기존 로드맵 전부 삭제 (항목별 오류는 건너뜀)
+      for (var di = 0; di < rmAll.docs.length; di++) {
+        try { await db.collection('roadmap').doc(rmAll.docs[di].id).delete(); removed++; } catch (eDel) {}
       }
-      var canonical = {};       // 유지할 roadmap 문서 id 집합
-      var added = 0, updated = 0, removed = 0;
-      // 1) 각 행사마다 대표 로드맵 문서를 정해 캘린더 날짜로 갱신 (없으면 생성)
-      for (var ei = 0; ei < events.length; ei++) {
-        var E = events[ei];
-        var cand = null;
-        for (var ci = 0; ci < rms.length; ci++) { if (rms[ci].sourceEventId === E.id && !canonical[rms[ci].id]) { cand = rms[ci]; break; } }
-        if (!cand) for (var cj = 0; cj < rms.length; cj++) { if (!canonical[rms[cj].id] && matchesEvent(rms[cj], E)) { cand = rms[cj]; break; } }
-        if (cand) {
-          var ph = cand.phases || {};
-          ph.event = { s: E.date, e: E.endDate || E.date };
-          await db.collection('roadmap').doc(cand.id).update({ name: E.title, sourceEventId: E.id, phases: ph });
-          try { await db.collection('events').doc(E.id).update({ roadmapId: cand.id }); } catch (e2) {}
-          canonical[cand.id] = true; updated++;
-        } else {
-          var nref = await db.collection('roadmap').add(rmDocFromEvent({ title: E.title, date: E.date, endDate: E.endDate }, E.id, sm.id));
-          try { await db.collection('events').doc(E.id).update({ roadmapId: nref.id }); } catch (e3) {}
-          canonical[nref.id] = true; added++;
-        }
-      }
-      // 2) 대표가 아닌 '행사 유래' 또는 중복 문서 삭제 (직접 추가한 항목은 보존)
-      for (var di = 0; di < rms.length; di++) {
-        var d = rms[di];
-        if (canonical[d.id]) continue;
-        var isDup = !!d.sourceEventId || events.some(function (E) { return matchesEvent(d, E); });
-        if (isDup) { await db.collection('roadmap').doc(d.id).delete(); removed++; }
+      // 2) 캘린더의 '행사(event)' 일정으로 다시 생성 (한 건 실패해도 나머지는 계속)
+      for (var ei = 0; ei < evAll.docs.length; ei++) {
+        var ed = evAll.docs[ei], E = ed.data();
+        if ((E.category || '') !== 'event' || !E.date || !E.title) continue;
+        try {
+          var nref = await db.collection('roadmap').add(rmDocFromEvent({ title: E.title, date: E.date, endDate: E.endDate }, ed.id, sm.id));
+          try { await db.collection('events').doc(ed.id).update({ roadmapId: nref.id }); } catch (e3) {}
+          added++;
+        } catch (eAdd) { /* 이 행사만 건너뜀 */ }
       }
       // 3) 행사 전날 '리허설'을 그 다음날 행사에 합치기 (리허설 행 삭제)
       function rmPlusDay(ds) {
@@ -427,7 +410,35 @@
           docs.splice(ri, 1); ri--; merged++;
         }
       }
-      return J({ ok: true, added: added, updated: updated, removed: removed, merged: merged });
+      // 4) 같은 이름 + 날짜가 붙어있는(연속·겹침) 행사는 하나로 합치기
+      var rmNow2 = await db.collection('roadmap').get();
+      var docs2 = rmNow2.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; });
+      var byName = {};
+      docs2.forEach(function (d) { if (d.phases && d.phases.event && d.phases.event.s) { (byName[d.name] = byName[d.name] || []).push(d); } });
+      var combined = 0;
+      for (var nm in byName) {
+        var grp = byName[nm];
+        if (grp.length < 2) continue;
+        grp.sort(function (a, b) { return a.phases.event.s < b.phases.event.s ? -1 : 1; });
+        var k = 0;
+        while (k < grp.length) {
+          var keep = grp[k];
+          var cEnd = keep.phases.event.e || keep.phases.event.s;
+          var extras = [], j = k + 1;
+          while (j < grp.length && grp[j].phases.event.s <= rmPlusDay(cEnd)) {
+            var ee = grp[j].phases.event.e || grp[j].phases.event.s;
+            if (ee > cEnd) cEnd = ee;
+            extras.push(grp[j]); j++;
+          }
+          if (extras.length) {
+            var kp = keep.phases || {}; kp.event = { s: keep.phases.event.s, e: cEnd };
+            await db.collection('roadmap').doc(keep.id).update({ phases: kp });
+            for (var x = 0; x < extras.length; x++) { await db.collection('roadmap').doc(extras[x].id).delete(); combined++; }
+          }
+          k = j;
+        }
+      }
+      return J({ ok: true, added: added, removed: removed, merged: merged, combined: combined });
     }
     var mRm = path.match(/^\/roadmap\/([^/]+)$/);
     if (mRm && method === 'PUT') {
