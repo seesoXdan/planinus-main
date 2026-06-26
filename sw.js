@@ -1,4 +1,4 @@
-const CACHE = 'planinus-v2';
+const CACHE = 'planinus-v3';
 const ASSETS = [
   './',
   './index.html',
