@@ -339,7 +339,7 @@
       return eventIds;
     }
     if (path === '/roadmap' && method === 'GET') {
-      await requireAdmin();
+      await requireUser();
       var rs = await db.collection('roadmap').get();
       var ra = rs.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; });
       return J(ra);

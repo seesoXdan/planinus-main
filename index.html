@@ -681,6 +681,9 @@ body:has(#page-quote.active) .main{max-width:1280px}
       <button data-page="cal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         캘린더</button>
+      <button data-page="roadmap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h11M4 10h7M4 15h9"/><rect x="14" y="3" width="6" height="4" rx="1"/><rect x="10" y="8" width="6" height="4" rx="1"/><rect x="12" y="13" width="6" height="4" rx="1"/></svg>
+        행사 로드맵</button>
       <button data-page="lib">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z"/></svg>
         자료실</button>
@@ -764,37 +767,34 @@ body:has(#page-quote.active) .main{max-width:1280px}
           <thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
           <tbody id="cal-body"></tbody>
         </table></div>
+      </section>
 
-        <!-- ── 행사 로드맵 (관리자 전용) ── -->
-        <div id="roadmap-section" style="display:none">
-          <div class="rm-head">
-            <div>
-              <h2>행사 로드맵<span class="rm-tag">관리자</span></h2>
-              <p>2026 PROJECT ROADMAP · 26주. 단계 일정을 입력하면 리허설·행사 운영은 캘린더에도 자동 반영됩니다.</p>
-            </div>
-            <button class="btn-add" id="rm-add-btn">＋ 프로젝트 추가</button>
-          </div>
-          <div class="rm-layout">
-            <div class="rm-card">
-              <div class="rm-scroll"><div class="rm-gantt">
-                <div class="rm-grid-head">
-                  <div></div>
-                  <div>
-                    <div class="rm-months" id="rm-months"></div>
-                    <div class="rm-weeks" id="rm-weeks"></div>
-                  </div>
+      <!-- ── 행사 로드맵 (전 직원 열람 · 편집은 관리자) ── -->
+      <section class="page" id="page-roadmap">
+        <div class="page-head">
+          <div><h1>행사 로드맵</h1><p>2026 PROJECT ROADMAP · 26주. 단계 일정을 입력하면 리허설·행사 운영은 캘린더에도 자동 반영됩니다.</p></div>
+          <button class="btn-add" id="rm-add-btn" style="display:none">＋ 프로젝트 추가</button>
+        </div>
+        <div class="rm-layout">
+          <div class="rm-card">
+            <div class="rm-scroll"><div class="rm-gantt">
+              <div class="rm-grid-head">
+                <div></div>
+                <div>
+                  <div class="rm-months" id="rm-months"></div>
+                  <div class="rm-weeks" id="rm-weeks"></div>
                 </div>
-                <div id="rm-rows"></div>
-              </div></div>
-              <div class="rm-legend">
-                <span><span class="sw" style="background:#3C8DBC"></span>기획·준비</span>
-                <span><span class="sw" style="background:#7C6CD0"></span>리허설</span>
-                <span><span class="sw" style="background:var(--coral)"></span>행사 운영</span>
-                <span><span class="sw" style="background:#4A4A4A"></span>정산·보고</span>
               </div>
+              <div id="rm-rows"></div>
+            </div></div>
+            <div class="rm-legend">
+              <span><span class="sw" style="background:#3C8DBC"></span>기획·준비</span>
+              <span><span class="sw" style="background:#7C6CD0"></span>리허설</span>
+              <span><span class="sw" style="background:var(--coral)"></span>행사 운영</span>
+              <span><span class="sw" style="background:#4A4A4A"></span>정산·보고</span>
             </div>
-            <div class="rm-kpi" id="rm-kpi"></div>
           </div>
+          <div class="rm-kpi" id="rm-kpi"></div>
         </div>
       </section>
 
@@ -1005,7 +1005,7 @@ async function enterApp(user){
   $('#add-notice-btn').style.display = isAdmin ? 'inline-flex' : 'none';
   $('#add-file-btn').style.display   = isAdmin ? 'inline-flex' : 'none';
   $('#nav-users').style.display      = isAdmin ? 'flex' : 'none';
-  $('#roadmap-section').style.display = isAdmin ? 'block' : 'none';
+  $('#rm-add-btn').style.display = isAdmin ? 'inline-flex' : 'none';
   $('#login-screen').classList.add('hidden');
   $('#app').classList.add('active');
   go('dash');
@@ -1048,7 +1048,7 @@ async function loadAll(){
     EVENTS = ev; NOTICES = no; FILES = fi;
     renderDash(); renderCal(); renderLib(); renderNotices();
     loadPartners();
-    if(ME && ME.role === 'admin') loadRoadmap();
+    loadRoadmap();
     api('/settings').then(s => { APP_SETTINGS = s || {}; }).catch(()=>{});
   }catch(err){ toast(err.message, true); }
 }
@@ -1922,10 +1922,11 @@ function rmBuildHeader(){
 }
 
 function renderRoadmap(){
+  const isAdmin = ME && ME.role === 'admin';
   rmBuildHeader();
   const rows = $('#rm-rows');
   if(!ROADMAP.length){
-    rows.innerHTML = `<div class="rm-empty">아직 등록된 프로젝트가 없습니다. ＋ 프로젝트 추가로 시작하세요.</div>`;
+    rows.innerHTML = `<div class="rm-empty">${isAdmin ? '아직 등록된 프로젝트가 없습니다. ＋ 프로젝트 추가로 시작하세요.' : '아직 등록된 프로젝트가 없습니다.'}</div>`;
   } else {
     const todayPos = rmWeekPos(fmt(TODAY));
     rows.innerHTML = ROADMAP.map(p => {
@@ -1941,13 +1942,14 @@ function renderRoadmap(){
         segs += `<div class="rm-seg ${ph.key}" style="left:${left}%;width:${width}%" title="${ph.label}: ${v.s} ~ ${v.e}">${width>6?ph.label.slice(0,2):''}</div>`;
       });
       const todayLine = (todayPos>=0 && todayPos<=RM_WEEKS) ? `<div class="rm-today" style="left:${todayPos/RM_WEEKS*100}%"></div>` : '';
+      const actions = isAdmin ? `<div class="rm-actions">
+          <button class="rm-ibtn" title="수정" onclick="openRoadmapModal('${p.id}')">✎</button>
+          <button class="rm-ibtn del" title="삭제" onclick="deleteRoadmap('${p.id}')">🗑</button>
+        </div>` : '<div></div>';
       return `<div class="rm-row">
         <div class="rm-name"><span class="dot"></span>${esc(p.name)}</div>
         <div class="rm-track">${cells}${segs}${todayLine}</div>
-        <div class="rm-actions">
-          <button class="rm-ibtn" title="수정" onclick="openRoadmapModal('${p.id}')">✎</button>
-          <button class="rm-ibtn del" title="삭제" onclick="deleteRoadmap('${p.id}')">🗑</button>
-        </div>
+        ${actions}
       </div>`;
     }).join('');
   }
@@ -1993,13 +1995,17 @@ function rmRenderKPI(){
     if(miss.length) risks.push(`${p.name} 단계 미입력 (${miss.length}건)`);
   });
 
-  $('#rm-kpi').innerHTML = `
+  const isAdmin = ME && ME.role === 'admin';
+  const revCard = isAdmin ? `
     <div class="rm-k">
       <div class="label">누적 예상 매출</div>
       <div class="val">${rmWon(totalRev)}</div>
       <div class="sub">프로젝트 ${ROADMAP.length}건 · 행사월 기준</div>
       ${mKeys.length ? `<div class="rm-mlist">${mHtml}</div>` : ''}
-    </div>
+    </div>` : '';
+
+  $('#rm-kpi').innerHTML = `
+    ${revCard}
     <div class="rm-k">
       <div class="label">전체 진행률</div>
       <div class="val">${progress}%</div>
