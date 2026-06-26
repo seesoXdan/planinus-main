@@ -259,7 +259,18 @@
       return J({ ok: true });
     }
 
-    /* ===== 일정(events) ===== */
+    /* 캘린더 '행사' → 로드맵 문서로 변환 (행사 운영일만 매핑) */
+    function rmDocFromEvent(ev, eventId, uid) {
+      return {
+        name: ev.title, owner: '', revenue: 0,
+        phases: { event: { s: ev.date, e: ev.endDate || ev.date } },
+        sourceEventId: eventId, created_by: uid, created_at: nowStr()
+      };
+    }
+
+    /* ===== 일정(events) =====
+       '행사(event)' 카테고리는 1차적으로 행사 로드맵에 자동 등록된다.
+       (단방향: 캘린더 → 로드맵. 로드맵 수정은 캘린더에 반영하지 않음) */
     if (path === '/events' && method === 'GET') {
       var es = await db.collection('events').get();
       var ea = es.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; });
@@ -275,69 +286,62 @@
       var edoc = { date: eb.date, endDate: eb.endDate || '', title: eb.title, category: eb.category || 'event', time: eb.time || '', created_by: em.id, created_at: nowStr() };
       var eref = await db.collection('events').add(edoc);
       edoc.id = eref.id;
+      if (edoc.category === 'event') {
+        try {
+          var rref0 = await db.collection('roadmap').add(rmDocFromEvent(edoc, eref.id, em.id));
+          await db.collection('events').doc(eref.id).update({ roadmapId: rref0.id });
+          edoc.roadmapId = rref0.id;
+        } catch (e) { /* 권한/오류 시 일정만 생성 */ }
+      }
       return J(edoc);
     }
     var mEv = path.match(/^\/events\/([^/]+)$/);
     if (mEv && method === 'PUT') {
-      await requireUser();
+      var epu = await requireUser();
       var pb = jsonBody || {};
+      var evSnap = await db.collection('events').doc(mEv[1]).get();
+      var evOld = evSnap.exists ? evSnap.data() : {};
       var up = { date: pb.date, endDate: pb.endDate || '', title: pb.title, category: pb.category, time: pb.time || '' };
       await db.collection('events').doc(mEv[1]).update(up);
+      if (up.category === 'event') {
+        try {
+          var rid = evOld.roadmapId;
+          var rExist = rid ? await db.collection('roadmap').doc(rid).get() : null;
+          if (rExist && rExist.exists) {
+            var rp = rExist.data().phases || {};
+            rp.event = { s: up.date, e: up.endDate || up.date };
+            await db.collection('roadmap').doc(rid).update({ name: up.title, phases: rp });
+          } else {
+            var nr = await db.collection('roadmap').add(rmDocFromEvent(up, mEv[1], epu.id));
+            await db.collection('events').doc(mEv[1]).update({ roadmapId: nr.id });
+          }
+        } catch (e) {}
+      }
       up.id = mEv[1];
       return J(up);
     }
     if (mEv && method === 'DELETE') {
       await requireUser();
+      var dSnap = await db.collection('events').doc(mEv[1]).get();
+      var dOld = dSnap.exists ? dSnap.data() : {};
       await db.collection('events').doc(mEv[1]).delete();
+      if (dOld.roadmapId) {
+        try {
+          var drs = await db.collection('roadmap').doc(dOld.roadmapId).get();
+          if (drs.exists) {
+            var dp = drs.data().phases || {};
+            var hasOther = ['prep', 'rehearsal', 'report'].some(function (k) { return dp[k] && dp[k].s; });
+            if (hasOther) { delete dp.event; await db.collection('roadmap').doc(dOld.roadmapId).update({ phases: dp }); }
+            else { await db.collection('roadmap').doc(dOld.roadmapId).delete(); }
+          }
+        } catch (e) {}
+      }
       return J({ ok: true });
     }
 
-    /* ===== 행사 로드맵(roadmap) — 관리자 전용 =====
-       저장 시 '리허설'·'행사 운영' 단계만 events 컬렉션에 동기화한다.
-       (eventIds 에 연결된 event 문서 id 를 보관 → 수정/삭제 시 함께 반영) */
-    var RM_SYNC = [
-      { key: 'rehearsal', label: '리허설',   category: 'company' },
-      { key: 'event',     label: '행사 운영', category: 'event' }
-    ];
-    function rmEventDoc(name, ph, phase, roadmapId, uid) {
-      return {
-        date: ph.s, endDate: ph.e || ph.s,
-        title: name + ' · ' + phase.label,
-        category: phase.category, time: '',
-        roadmapId: roadmapId, phase: phase.key,
-        created_by: uid, created_at: nowStr()
-      };
-    }
-    async function rmSync(roadmapId, name, phases, eventIds, uid) {
-      eventIds = eventIds || {};
-      for (var i = 0; i < RM_SYNC.length; i++) {
-        var ph = RM_SYNC[i];
-        var val = phases && phases[ph.key];
-        var has = val && val.s;
-        var existing = eventIds[ph.key];
-        if (has) {
-          var doc = rmEventDoc(name, val, ph, roadmapId, uid);
-          if (existing) {
-            try {
-              await db.collection('events').doc(existing).update({
-                date: doc.date, endDate: doc.endDate, title: doc.title, category: doc.category
-              });
-            } catch (e) {
-              /* 캘린더에서 직접 삭제된 경우 → 새로 생성 */
-              var reref = await db.collection('events').add(doc);
-              eventIds[ph.key] = reref.id;
-            }
-          } else {
-            var ref = await db.collection('events').add(doc);
-            eventIds[ph.key] = ref.id;
-          }
-        } else if (existing) {
-          try { await db.collection('events').doc(existing).delete(); } catch (e) {}
-          delete eventIds[ph.key];
-        }
-      }
-      return eventIds;
-    }
+    /* ===== 행사 로드맵(roadmap) =====
+       읽기: 승인 직원 누구나 / 작성·수정·삭제(매뉴얼): 관리자만.
+       로드맵 변경은 캘린더(events)에 반영하지 않는다. */
     if (path === '/roadmap' && method === 'GET') {
       await requireUser();
       var rs = await db.collection('roadmap').get();
@@ -350,39 +354,98 @@
       if (!rb.name) return ERR('프로젝트명은 필수입니다.');
       var rdoc = {
         name: rb.name, owner: rb.owner || '', revenue: Number(rb.revenue) || 0,
-        phases: rb.phases || {}, eventIds: {},
-        created_by: rm.id, created_at: nowStr()
+        phases: rb.phases || {}, created_by: rm.id, created_at: nowStr()
       };
       var rref = await db.collection('roadmap').add(rdoc);
-      rdoc.eventIds = await rmSync(rref.id, rdoc.name, rdoc.phases, {}, rm.id);
-      await db.collection('roadmap').doc(rref.id).update({ eventIds: rdoc.eventIds });
       rdoc.id = rref.id;
       return J(rdoc);
     }
+    // 캘린더 기준 재동기화: '행사' 일정을 로드맵에 맞추고, 중복/낡은 항목을 정리한다.
+    if (path === '/roadmap/sync-events' && method === 'POST') {
+      var sm = await requireAdmin();
+      var evAll = await db.collection('events').get();
+      var rmAll = await db.collection('roadmap').get();
+      var events = evAll.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; })
+        .filter(function (e) { return (e.category || '') === 'event'; });
+      var rms = rmAll.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; });
+      function matchesEvent(d, E) {
+        return d.name === E.title && d.phases && d.phases.event && d.phases.event.s === E.date;
+      }
+      var canonical = {};       // 유지할 roadmap 문서 id 집합
+      var added = 0, updated = 0, removed = 0;
+      // 1) 각 행사마다 대표 로드맵 문서를 정해 캘린더 날짜로 갱신 (없으면 생성)
+      for (var ei = 0; ei < events.length; ei++) {
+        var E = events[ei];
+        var cand = null;
+        for (var ci = 0; ci < rms.length; ci++) { if (rms[ci].sourceEventId === E.id && !canonical[rms[ci].id]) { cand = rms[ci]; break; } }
+        if (!cand) for (var cj = 0; cj < rms.length; cj++) { if (!canonical[rms[cj].id] && matchesEvent(rms[cj], E)) { cand = rms[cj]; break; } }
+        if (cand) {
+          var ph = cand.phases || {};
+          ph.event = { s: E.date, e: E.endDate || E.date };
+          await db.collection('roadmap').doc(cand.id).update({ name: E.title, sourceEventId: E.id, phases: ph });
+          try { await db.collection('events').doc(E.id).update({ roadmapId: cand.id }); } catch (e2) {}
+          canonical[cand.id] = true; updated++;
+        } else {
+          var nref = await db.collection('roadmap').add(rmDocFromEvent({ title: E.title, date: E.date, endDate: E.endDate }, E.id, sm.id));
+          try { await db.collection('events').doc(E.id).update({ roadmapId: nref.id }); } catch (e3) {}
+          canonical[nref.id] = true; added++;
+        }
+      }
+      // 2) 대표가 아닌 '행사 유래' 또는 중복 문서 삭제 (직접 추가한 항목은 보존)
+      for (var di = 0; di < rms.length; di++) {
+        var d = rms[di];
+        if (canonical[d.id]) continue;
+        var isDup = !!d.sourceEventId || events.some(function (E) { return matchesEvent(d, E); });
+        if (isDup) { await db.collection('roadmap').doc(d.id).delete(); removed++; }
+      }
+      // 3) 행사 전날 '리허설'을 그 다음날 행사에 합치기 (리허설 행 삭제)
+      function rmPlusDay(ds) {
+        var dd = new Date(ds + 'T00:00:00'); dd.setDate(dd.getDate() + 1);
+        return dd.getFullYear() + '-' + String(dd.getMonth() + 1).padStart(2, '0') + '-' + String(dd.getDate()).padStart(2, '0');
+      }
+      var rmNow = await db.collection('roadmap').get();
+      var docs = rmNow.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; });
+      var merged = 0;
+      for (var ri = 0; ri < docs.length; ri++) {
+        var reh = docs[ri];
+        var rev = reh.phases && reh.phases.event;
+        if (!rev || !rev.s || !/리허설|세팅/.test(reh.name || '')) continue;
+        var nextDay = rmPlusDay(rev.s);
+        var target = null;
+        for (var ti = 0; ti < docs.length; ti++) {
+          var t = docs[ti];
+          if (t.id === reh.id || /리허설|세팅/.test(t.name || '')) continue;
+          var tev = t.phases && t.phases.event;
+          if (tev && tev.s === nextDay) { target = t; break; }
+        }
+        if (target) {
+          var tp = target.phases || {};
+          tp.rehearsal = { s: rev.s, e: rev.e || rev.s };
+          await db.collection('roadmap').doc(target.id).update({ phases: tp });
+          await db.collection('roadmap').doc(reh.id).delete();
+          if (reh.sourceEventId) { try { await db.collection('events').doc(reh.sourceEventId).update({ roadmapId: '' }); } catch (e4) {} }
+          docs.splice(ri, 1); ri--; merged++;
+        }
+      }
+      return J({ ok: true, added: added, updated: updated, removed: removed, merged: merged });
+    }
     var mRm = path.match(/^\/roadmap\/([^/]+)$/);
     if (mRm && method === 'PUT') {
-      var rmu = await requireAdmin();
+      await requireAdmin();
       var rpb = jsonBody || {};
-      var cur = await db.collection('roadmap').doc(mRm[1]).get();
-      if (!cur.exists) return ERR('프로젝트를 찾을 수 없습니다.', 404);
-      var curData = cur.data();
-      var up = {
+      var up2 = {
         name: rpb.name, owner: rpb.owner || '', revenue: Number(rpb.revenue) || 0,
         phases: rpb.phases || {}
       };
-      up.eventIds = await rmSync(mRm[1], up.name, up.phases, curData.eventIds || {}, rmu.id);
-      await db.collection('roadmap').doc(mRm[1]).update(up);
-      up.id = mRm[1];
-      return J(up);
+      await db.collection('roadmap').doc(mRm[1]).update(up2);
+      up2.id = mRm[1];
+      return J(up2);
     }
     if (mRm && method === 'DELETE') {
       await requireAdmin();
       var rdel = await db.collection('roadmap').doc(mRm[1]).get();
-      if (rdel.exists) {
-        var eids = rdel.data().eventIds || {};
-        for (var ek in eids) {
-          try { await db.collection('events').doc(eids[ek]).delete(); } catch (e) {}
-        }
+      if (rdel.exists && rdel.data().sourceEventId) {
+        try { await db.collection('events').doc(rdel.data().sourceEventId).update({ roadmapId: '' }); } catch (e) {}
       }
       await db.collection('roadmap').doc(mRm[1]).delete();
       return J({ ok: true });
