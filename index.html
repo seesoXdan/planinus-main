@@ -551,6 +551,67 @@ body:has(#page-quote.active) .main{max-width:1280px}
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
 }
+/* ───────── 행사 로드맵 (관리자 전용) ───────── */
+#roadmap-section{margin-top:28px;border-top:1px solid var(--line);padding-top:24px}
+.rm-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.rm-head h2{font-size:1.15rem;font-weight:700;color:var(--teal-deep)}
+.rm-head p{font-size:.82rem;color:#6E8782;margin-top:4px}
+.rm-tag{font-size:.64rem;font-weight:700;background:var(--teal);color:#fff;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.rm-layout{display:grid;grid-template-columns:1fr 250px;gap:16px;align-items:start}
+@media(max-width:900px){.rm-layout{grid-template-columns:1fr}}
+.rm-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.rm-scroll{overflow-x:auto}
+.rm-gantt{min-width:760px}
+.rm-grid-head,.rm-row{display:grid;grid-template-columns:118px 1fr 64px;gap:8px;align-items:center}
+.rm-grid-head{grid-template-columns:118px 1fr}
+.rm-months{display:grid;grid-template-columns:repeat(26,1fr);gap:2px;margin-bottom:4px}
+.rm-mo{font-size:.64rem;font-weight:600;color:var(--teal-deep);background:#EAF4F1;border-radius:4px;padding:2px 0;text-align:center;white-space:nowrap;overflow:hidden}
+.rm-weeks{display:grid;grid-template-columns:repeat(26,1fr);gap:1px}
+.rm-wk{font-size:.58rem;color:var(--teal-soft);text-align:center;line-height:1.4}
+.rm-wk.q{color:var(--teal);font-weight:600}
+.rm-row{padding:7px 0;border-top:1px solid var(--line)}
+.rm-row:first-of-type{border-top:none}
+.rm-name{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.rm-name .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex:none}
+.rm-track{position:relative;display:grid;grid-template-columns:repeat(26,1fr);gap:1px;height:20px}
+.rm-track .cell{background:#F4F8F6;border-radius:3px}
+.rm-seg{position:absolute;top:0;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.58rem;color:#fff;font-weight:600;overflow:hidden}
+.rm-seg.prep{background:#3C8DBC}
+.rm-seg.rehearsal{background:#7C6CD0}
+.rm-seg.event{background:var(--coral)}
+.rm-seg.report{background:#4A4A4A}
+.rm-today{position:absolute;top:-2px;width:2px;background:var(--coral);height:calc(100% + 4px);z-index:5}
+.rm-actions{display:flex;gap:5px;justify-self:end}
+.rm-ibtn{border:1px solid var(--line);background:var(--surface);border-radius:7px;width:28px;height:27px;font-size:.74rem;color:var(--teal-deep);cursor:pointer}
+.rm-ibtn:hover{background:#EAF4F1}
+.rm-ibtn.del:hover{background:#FBEDEB;color:var(--coral);border-color:var(--coral)}
+.rm-legend{display:flex;flex-wrap:wrap;gap:13px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.rm-legend span{display:flex;align-items:center;gap:6px;font-size:.73rem;color:#5E7A74}
+.rm-legend .sw{width:11px;height:11px;border-radius:3px}
+.rm-empty{text-align:center;padding:32px 0;color:var(--teal-soft);font-size:.84rem}
+.rm-kpi{display:flex;flex-direction:column;gap:12px}
+.rm-k{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px}
+.rm-k .label{font-size:.74rem;color:var(--teal-soft);font-weight:600}
+.rm-k .val{font-size:1.5rem;font-weight:700;color:var(--teal-deep);margin-top:2px}
+.rm-k .val.danger{color:var(--coral)}
+.rm-k .sub{font-size:.71rem;color:var(--teal-soft);margin-top:2px}
+.rm-bar{height:7px;background:#EAF1EE;border-radius:99px;margin-top:9px;overflow:hidden}
+.rm-bar i{display:block;height:100%;background:var(--teal);border-radius:99px}
+.rm-risk{font-size:.73rem;color:#5E7A74;display:flex;gap:6px;margin-top:6px}
+.rm-risk .rdot{width:7px;height:7px;border-radius:50%;background:var(--coral);margin-top:5px;flex:none}
+.rm-mlist{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+.rm-m{margin-bottom:9px}
+.rm-m:last-child{margin-bottom:0}
+.rm-m .top{display:flex;justify-content:space-between;align-items:baseline;font-size:.71rem;margin-bottom:3px}
+.rm-m .ml{color:var(--teal-soft);font-weight:600}
+.rm-m .mv{color:var(--teal-deep);font-weight:600;font-variant-numeric:tabular-nums}
+.rm-m .mb{height:5px;background:#EAF1EE;border-radius:99px;overflow:hidden}
+.rm-m .mb i{display:block;height:100%;background:var(--teal);border-radius:99px}
+.rm-phase{display:grid;grid-template-columns:84px 1fr 1fr;gap:8px;align-items:center;margin-bottom:8px}
+.rm-phase .pl{font-size:.76rem;font-weight:600;display:flex;align-items:center;gap:6px}
+.rm-phase .pl .sw{width:10px;height:10px;border-radius:3px;flex:none}
+.rm-phase-head{display:grid;grid-template-columns:84px 1fr 1fr;gap:8px;font-size:.68rem;color:var(--teal-soft);margin-bottom:6px;font-weight:600}
+.rm-sync-note{font-size:.73rem;color:var(--teal-deep);background:#EAF4F1;padding:10px 12px;border-radius:10px;margin:10px 0;display:flex;gap:8px}
 </style>
 </head>
 <body>
@@ -703,6 +764,38 @@ body:has(#page-quote.active) .main{max-width:1280px}
           <thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
           <tbody id="cal-body"></tbody>
         </table></div>
+
+        <!-- ── 행사 로드맵 (관리자 전용) ── -->
+        <div id="roadmap-section" style="display:none">
+          <div class="rm-head">
+            <div>
+              <h2>행사 로드맵<span class="rm-tag">관리자</span></h2>
+              <p>2026 PROJECT ROADMAP · 26주. 단계 일정을 입력하면 리허설·행사 운영은 캘린더에도 자동 반영됩니다.</p>
+            </div>
+            <button class="btn-add" id="rm-add-btn">＋ 프로젝트 추가</button>
+          </div>
+          <div class="rm-layout">
+            <div class="rm-card">
+              <div class="rm-scroll"><div class="rm-gantt">
+                <div class="rm-grid-head">
+                  <div></div>
+                  <div>
+                    <div class="rm-months" id="rm-months"></div>
+                    <div class="rm-weeks" id="rm-weeks"></div>
+                  </div>
+                </div>
+                <div id="rm-rows"></div>
+              </div></div>
+              <div class="rm-legend">
+                <span><span class="sw" style="background:#3C8DBC"></span>기획·준비</span>
+                <span><span class="sw" style="background:#7C6CD0"></span>리허설</span>
+                <span><span class="sw" style="background:var(--coral)"></span>행사 운영</span>
+                <span><span class="sw" style="background:#4A4A4A"></span>정산·보고</span>
+              </div>
+            </div>
+            <div class="rm-kpi" id="rm-kpi"></div>
+          </div>
+        </div>
       </section>
 
       <!-- ── 자료실 ── -->
@@ -912,6 +1005,7 @@ async function enterApp(user){
   $('#add-notice-btn').style.display = isAdmin ? 'inline-flex' : 'none';
   $('#add-file-btn').style.display   = isAdmin ? 'inline-flex' : 'none';
   $('#nav-users').style.display      = isAdmin ? 'flex' : 'none';
+  $('#roadmap-section').style.display = isAdmin ? 'block' : 'none';
   $('#login-screen').classList.add('hidden');
   $('#app').classList.add('active');
   go('dash');
@@ -954,6 +1048,7 @@ async function loadAll(){
     EVENTS = ev; NOTICES = no; FILES = fi;
     renderDash(); renderCal(); renderLib(); renderNotices();
     loadPartners();
+    if(ME && ME.role === 'admin') loadRoadmap();
     api('/settings').then(s => { APP_SETTINGS = s || {}; }).catch(()=>{});
   }catch(err){ toast(err.message, true); }
 }
@@ -1793,6 +1888,182 @@ async function submitEvent(id){
 }
 function delEventFromModal(id){
   if(confirm('이 일정을 삭제할까요?')){ closeModal(); deleteEvent(id); }
+}
+
+/* ───────── 행사 로드맵 (관리자 전용) ───────── */
+let ROADMAP = [];
+const RM_START = new Date(2026, 0, 5);   // 26주 기준 시작일(월). 필요시 변경
+const RM_WEEKS = 26, RM_MSDAY = 86400000;
+const RM_PHASES = [
+  {key:'prep',      label:'기획·준비', sw:'#3C8DBC', sync:false},
+  {key:'rehearsal', label:'리허설',    sw:'#7C6CD0', sync:true},
+  {key:'event',     label:'행사 운영', sw:'var(--coral)', sync:true},
+  {key:'report',    label:'정산·보고', sw:'#4A4A4A', sync:false},
+];
+const rmWon = n => n ? '₩'+Number(n).toLocaleString('ko-KR') : '₩0';
+const rmWeekPos = ds => ds ? (new Date(ds+'T00:00:00') - RM_START)/(7*RM_MSDAY) : 0;
+
+async function loadRoadmap(){
+  try{ ROADMAP = await api('/roadmap') || []; renderRoadmap(); }
+  catch(err){ /* 비관리자/권한오류는 조용히 무시 */ }
+}
+
+function rmBuildHeader(){
+  let mh='', runM=null, runStart=1;
+  const flush = end => { if(runM!==null){ mh += `<div class="rm-mo" style="grid-column:span ${end-runStart+1}">${runM+1}월</div>`; } };
+  for(let w=1; w<=RM_WEEKS; w++){
+    const d = new Date(RM_START.getTime() + (w-1)*7*RM_MSDAY);
+    if(d.getMonth()!==runM){ flush(w-1); runM=d.getMonth(); runStart=w; }
+  }
+  flush(RM_WEEKS);
+  $('#rm-months').innerHTML = mh;
+  let wh=''; for(let w=1; w<=RM_WEEKS; w++) wh += `<div class="rm-wk ${w%4===1?'q':''}">${w%4===1||w===RM_WEEKS?'W'+w:'·'}</div>`;
+  $('#rm-weeks').innerHTML = wh;
+}
+
+function renderRoadmap(){
+  rmBuildHeader();
+  const rows = $('#rm-rows');
+  if(!ROADMAP.length){
+    rows.innerHTML = `<div class="rm-empty">아직 등록된 프로젝트가 없습니다. ＋ 프로젝트 추가로 시작하세요.</div>`;
+  } else {
+    const todayPos = rmWeekPos(fmt(TODAY));
+    rows.innerHTML = ROADMAP.map(p => {
+      let cells=''; for(let i=0;i<RM_WEEKS;i++) cells+='<div class="cell"></div>';
+      let segs='';
+      RM_PHASES.forEach(ph => {
+        const v = p.phases && p.phases[ph.key];
+        if(!v || !v.s || !v.e) return;
+        let a = Math.max(0, rmWeekPos(v.s));
+        let b = Math.min(RM_WEEKS, rmWeekPos(v.e) + (1/7));
+        if(b<=a) b = a + (1/7);
+        const left = a/RM_WEEKS*100, width = (b-a)/RM_WEEKS*100;
+        segs += `<div class="rm-seg ${ph.key}" style="left:${left}%;width:${width}%" title="${ph.label}: ${v.s} ~ ${v.e}">${width>6?ph.label.slice(0,2):''}</div>`;
+      });
+      const todayLine = (todayPos>=0 && todayPos<=RM_WEEKS) ? `<div class="rm-today" style="left:${todayPos/RM_WEEKS*100}%"></div>` : '';
+      return `<div class="rm-row">
+        <div class="rm-name"><span class="dot"></span>${esc(p.name)}</div>
+        <div class="rm-track">${cells}${segs}${todayLine}</div>
+        <div class="rm-actions">
+          <button class="rm-ibtn" title="수정" onclick="openRoadmapModal('${p.id}')">✎</button>
+          <button class="rm-ibtn del" title="삭제" onclick="deleteRoadmap('${p.id}')">🗑</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  rmRenderKPI();
+}
+
+function rmRenderKPI(){
+  const totalRev = ROADMAP.reduce((s,p)=>s+(Number(p.revenue)||0),0);
+  const monthly = {};
+  ROADMAP.forEach(p=>{
+    const rev = Number(p.revenue)||0; if(!rev) return;
+    const ev = (p.phases&&p.phases.event&&p.phases.event.s) || (p.phases&&p.phases.report&&p.phases.report.s)
+             || ((RM_PHASES.map(ph=>p.phases&&p.phases[ph.key]).find(v=>v&&v.s)||{}).s);
+    if(!ev) return;
+    const k = ev.slice(0,7); monthly[k] = (monthly[k]||0)+rev;
+  });
+  const mKeys = Object.keys(monthly).sort();
+  const maxM = Math.max(1, ...Object.values(monthly));
+  const mHtml = mKeys.map(k=>{
+    const mo = Number(k.slice(5,7)), v = monthly[k];
+    return `<div class="rm-m"><div class="top"><span class="ml">${mo}월</span><span class="mv">${rmWon(v)}</span></div><div class="mb"><i style="width:${Math.round(v/maxM*100)}%"></i></div></div>`;
+  }).join('');
+
+  const today = new Date();
+  let progSum=0, cnt=0;
+  ROADMAP.forEach(p=>{
+    const ds = RM_PHASES.map(ph=>p.phases&&p.phases[ph.key]).filter(v=>v&&v.s&&v.e);
+    if(!ds.length) return;
+    const start = new Date(ds[0].s+'T00:00:00'), end = new Date(ds[ds.length-1].e+'T00:00:00');
+    let r = (today-start)/(end-start); r = Math.max(0, Math.min(1, r));
+    progSum += r; cnt++;
+  });
+  const progress = cnt ? Math.round(progSum/cnt*100) : 0;
+
+  const risks = [];
+  const evR = ROADMAP.map(p=>({name:p.name, v:p.phases&&p.phases.event})).filter(x=>x.v&&x.v.s&&x.v.e);
+  for(let i=0;i<evR.length;i++) for(let j=i+1;j<evR.length;j++){
+    const a=evR[i], b=evR[j];
+    if(a.v.s<=b.v.e && b.v.s<=a.v.e) risks.push(`${a.name} · ${b.name} 행사일 중복`);
+  }
+  ROADMAP.forEach(p=>{
+    const miss = RM_PHASES.filter(ph=>!(p.phases&&p.phases[ph.key]&&p.phases[ph.key].s));
+    if(miss.length) risks.push(`${p.name} 단계 미입력 (${miss.length}건)`);
+  });
+
+  $('#rm-kpi').innerHTML = `
+    <div class="rm-k">
+      <div class="label">누적 예상 매출</div>
+      <div class="val">${rmWon(totalRev)}</div>
+      <div class="sub">프로젝트 ${ROADMAP.length}건 · 행사월 기준</div>
+      ${mKeys.length ? `<div class="rm-mlist">${mHtml}</div>` : ''}
+    </div>
+    <div class="rm-k">
+      <div class="label">전체 진행률</div>
+      <div class="val">${progress}%</div>
+      <div class="rm-bar"><i style="width:${progress}%"></i></div>
+    </div>
+    <div class="rm-k">
+      <div class="label">리스크</div>
+      <div class="val ${risks.length?'danger':''}">${risks.length}<span style="font-size:.78rem;color:var(--teal-soft);font-weight:600"> 건</span></div>
+      ${risks.length ? risks.slice(0,4).map(r=>`<div class="rm-risk"><span class="rdot"></span>${esc(r)}</div>`).join('') : '<div class="sub" style="margin-top:6px">감지된 리스크 없음 ✓</div>'}
+    </div>`;
+}
+
+function openRoadmapModal(id){
+  const p = id ? ROADMAP.find(x=>x.id===id) : null;
+  const ph = k => (p && p.phases && p.phases[k]) ? p.phases[k] : {s:'',e:''};
+  const phaseRows = RM_PHASES.map(x=>{
+    const v = ph(x.key);
+    return `<div class="rm-phase">
+      <div class="pl"><span class="sw" style="background:${x.sw}"></span>${x.label}</div>
+      <input type="date" id="rm-f-${x.key}-s" value="${v.s||''}">
+      <input type="date" id="rm-f-${x.key}-e" value="${v.e||''}">
+    </div>`;
+  }).join('');
+  modalCard.innerHTML = `
+    <h3>${p ? '프로젝트 수정' : '프로젝트 추가'}</h3>
+    <div class="field"><label>프로젝트명</label><input type="text" id="rm-f-name" value="${p?esc(p.name):''}" placeholder="예) KASA 국제컨퍼런스"></div>
+    <div class="modal-row">
+      <div class="field"><label>예상 매출 (원)</label><input type="number" id="rm-f-revenue" value="${p?(p.revenue||''):''}" placeholder="예) 120000000"></div>
+      <div class="field"><label>담당</label><input type="text" id="rm-f-owner" value="${p?esc(p.owner||''):''}" placeholder="예) 기획팀"></div>
+    </div>
+    <div class="field" style="margin-bottom:6px"><label>단계별 일정</label></div>
+    <div class="rm-phase-head"><div></div><div>시작일</div><div>종료일</div></div>
+    ${phaseRows}
+    <div class="rm-sync-note"><span>🔄</span><span><b>리허설 · 행사 운영</b> 단계만 캘린더에 자동 등록됩니다. (기획·준비, 정산·보고는 로드맵에만 표시)</span></div>
+    <div class="modal-actions">
+      ${p ? `<button class="btn-cancel" style="flex:0 0 auto;color:var(--coral)" onclick="deleteRoadmap('${p.id}')">삭제</button>` : ''}
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-save" onclick="submitRoadmap(${p ? `'${p.id}'` : 'null'})">${p ? '저장' : '추가'}</button>
+    </div>`;
+  modalBack.classList.add('open'); setTimeout(()=>$('#rm-f-name').focus(),50);
+}
+$('#rm-add-btn').addEventListener('click', ()=>openRoadmapModal(null));
+
+async function submitRoadmap(id){
+  const name = $('#rm-f-name').value.trim();
+  if(!name){ toast('프로젝트명을 입력해 주세요.', true); return; }
+  const phases = {};
+  for(const x of RM_PHASES){
+    const s = $('#rm-f-'+x.key+'-s').value, e = $('#rm-f-'+x.key+'-e').value;
+    if(s && e && e < s){ toast(`${x.label}: 종료일은 시작일보다 빠를 수 없습니다.`, true); return; }
+    phases[x.key] = {s, e};
+  }
+  const body = { name, owner:$('#rm-f-owner').value.trim(), revenue:Number($('#rm-f-revenue').value)||0, phases };
+  try{
+    if(id){ await api('/roadmap/'+id,{method:'PUT', body}); toast('로드맵을 수정했습니다.'); }
+    else  { await api('/roadmap',{method:'POST', body}); toast('로드맵에 프로젝트를 추가했습니다.'); }
+    closeModal(); await loadAll();   // 캘린더(events)도 함께 갱신
+  }catch(err){ toast(err.message, true); }
+}
+async function deleteRoadmap(id){
+  const p = ROADMAP.find(x=>x.id===id);
+  if(!confirm(`'${p?p.name:''}' 프로젝트를 삭제할까요?\n연결된 캘린더 일정(리허설·행사 운영)도 함께 삭제됩니다.`)) return;
+  try{ closeModal(); await api('/roadmap/'+id,{method:'DELETE'}); toast('로드맵 프로젝트를 삭제했습니다.'); await loadAll(); }
+  catch(err){ toast(err.message, true); }
 }
 
 $('#add-notice-btn').addEventListener('click', () => {
