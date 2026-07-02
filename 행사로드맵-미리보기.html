@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>행사 로드맵 · 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#2F8577; --teal-deep:#1E5C52; --teal-soft:#71A5A1;
+  --ink:#16332E; --mint-bg:#F1F6F4; --surface:#FFFFFF; --line:#DDE9E5;
+  --sand:#E9A23B; --coral:#D96C5F; --radius:14px;
+  --shadow:0 2px 12px rgba(22,51,46,.07);
+  /* 단계 색상 */
+  --p-prep:#3C8DBC;       /* 🟦 기획·준비 */
+  --p-rehearsal:#7C6CD0;  /* 🟪 리허설 */
+  --p-event:#D96C5F;      /* 🔴 행사 운영 */
+  --p-report:#4A4A4A;     /* ⚫ 정산·결과보고 */
+  font-size:15px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'IBM Plex Sans KR',system-ui,sans-serif;
+  background:var(--mint-bg); color:var(--ink);
+  -webkit-font-smoothing:antialiased; padding:20px; display:flex;
+  flex-direction:column; gap:16px;
+}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+
+/* 상단 바 */
+.bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar h1{font-size:1.5rem;font-weight:700;color:var(--teal-deep)}
+.bar .sub{font-size:.82rem;color:var(--teal-soft)}
+.tag{font-size:.72rem;color:var(--sand);font-weight:700;border:1px solid var(--sand);padding:2px 8px;border-radius:99px}
+.btn-add{
+  margin-left:auto;background:var(--teal);color:#fff;border:none;
+  padding:10px 18px;border-radius:10px;font-size:.86rem;font-weight:600;
+}
+.btn-add:hover{background:var(--teal-deep)}
+
+/* 본문 그리드: 좌 간트 / 우 KPI */
+.layout{display:grid;grid-template-columns:1fr 248px;gap:16px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+.card{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;
+}
+.card h2{font-size:1rem;font-weight:700;color:var(--teal-deep);margin-bottom:4px}
+.card .hint{font-size:.76rem;color:var(--teal-soft);margin-bottom:14px}
+
+/* ── 간트차트 ── */
+.gantt-scroll{overflow-x:auto}
+.gantt{min-width:760px}
+/* 헤더와 행이 같은 3열(이름·트랙·버튼) 구조를 써야 주 라벨과 색 막대가 어긋나지 않음 */
+.gantt-head,.gantt-row{display:grid;grid-template-columns:120px 1fr 70px;gap:8px;align-items:center}
+.gantt-row{padding:7px 0;border-top:1px solid var(--line)}
+.gantt-row:first-of-type{border-top:none}
+.months{display:grid;grid-template-columns:repeat(26,1fr);gap:1px;margin-bottom:4px}
+.mo{font-size:.66rem;font-weight:600;color:var(--teal-deep);background:#EAF4F1;
+  border-radius:4px;padding:2px 0;text-align:center;white-space:nowrap;overflow:hidden}
+.weeks{display:grid;grid-template-columns:repeat(26,1fr);gap:1px}
+.wk{font-size:.6rem;color:var(--teal-soft);text-align:center;line-height:1.4}
+.wk.q{color:var(--teal);font-weight:600}
+.proj-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.proj-name .dot{width:7px;height:7px;border-radius:50%;background:var(--teal)}
+.track{position:relative;display:grid;grid-template-columns:repeat(26,1fr);gap:1px;height:20px}
+.track .cell{background:#F4F8F6;border-radius:3px}
+.seg{position:absolute;top:0;height:20px;border-radius:4px;display:flex;align-items:center;
+  justify-content:center;font-size:.6rem;color:#fff;font-weight:600;overflow:hidden;cursor:default}
+.seg.prep{background:var(--p-prep)}
+.seg.rehearsal{background:var(--p-rehearsal)}
+.seg.event{background:var(--p-event)}
+.seg.report{background:var(--p-report)}
+.row-actions{display:flex;gap:6px;justify-self:end}
+.icon-btn{border:1px solid var(--line);background:var(--surface);border-radius:7px;
+  width:30px;height:28px;font-size:.78rem;color:var(--teal-deep)}
+.icon-btn:hover{background:#EAF4F1}
+.icon-btn.del:hover{background:#FBECEA;color:var(--coral);border-color:var(--coral)}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.legend span{display:flex;align-items:center;gap:6px;font-size:.74rem;color:#5E7A74}
+.legend .sw{width:11px;height:11px;border-radius:3px}
+
+.today-line{position:absolute;top:-2px;width:2px;background:var(--coral);height:calc(100% + 4px);z-index:5}
+
+/* ── KPI ── */
+.kpi-col{display:flex;flex-direction:column;gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:14px 16px}
+.kpi .label{font-size:.76rem;color:var(--teal-soft);font-weight:600}
+.kpi .val{font-size:1.6rem;font-weight:700;color:var(--teal-deep);margin-top:2px}
+.kpi .sub{font-size:.72rem;color:var(--teal-soft);margin-top:2px}
+.kpi .val.danger{color:var(--coral)}
+.bar-track{height:7px;background:#EAF1EE;border-radius:99px;margin-top:9px;overflow:hidden}
+.bar-fill{height:100%;background:var(--teal);border-radius:99px}
+.risk-item{font-size:.74rem;color:#5E7A74;display:flex;gap:6px;margin-top:6px}
+.risk-item .rdot{width:7px;height:7px;border-radius:50%;background:var(--coral);margin-top:5px;flex:none}
+.mrev-list{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+.mrev{margin-bottom:9px}
+.mrev:last-child{margin-bottom:0}
+.mrev .top{display:flex;justify-content:space-between;align-items:baseline;font-size:.72rem;margin-bottom:3px}
+.mrev .ml{color:var(--teal-soft);font-weight:600}
+.mrev .mv{color:var(--teal-deep);font-weight:600;font-variant-numeric:tabular-nums}
+.mrev .mb{height:5px;background:#EAF1EE;border-radius:99px;overflow:hidden}
+.mrev .mbf{display:block;height:100%;background:var(--teal);border-radius:99px}
+
+/* ── 모달 ── */
+.modal-bg{position:fixed;inset:0;background:rgba(22,51,46,.4);display:none;
+  align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal-bg.on{display:flex}
+.modal{background:var(--surface);border-radius:18px;width:100%;max-width:520px;
+  max-height:90vh;overflow:auto;padding:24px}
+.modal h3{font-size:1.15rem;font-weight:700;color:var(--teal-deep);margin-bottom:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.78rem;font-weight:600;color:var(--teal-deep);margin-bottom:6px}
+.field input{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:.88rem;color:var(--ink)}
+.field input:focus{outline:none;border-color:var(--teal)}
+.phase-row{display:grid;grid-template-columns:88px 1fr 1fr;gap:8px;align-items:center;margin-bottom:8px}
+.phase-row .pl{font-size:.78rem;font-weight:600;display:flex;align-items:center;gap:6px}
+.phase-row .pl .sw{width:10px;height:10px;border-radius:3px}
+.phase-row input{padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:.8rem}
+.phase-head{display:grid;grid-template-columns:88px 1fr 1fr;gap:8px;font-size:.7rem;color:var(--teal-soft);margin-bottom:6px;font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.btn-ghost{background:var(--surface);border:1.5px solid var(--line);color:#5E7A74;padding:10px 18px;border-radius:10px;font-weight:600;font-size:.86rem}
+.btn-primary{background:var(--teal);border:none;color:#fff;padding:10px 20px;border-radius:10px;font-weight:600;font-size:.86rem}
+.btn-primary:hover{background:var(--teal-deep)}
+.sync-note{font-size:.74rem;color:var(--teal-soft);background:#EAF4F1;padding:10px 12px;border-radius:10px;margin-top:6px;display:flex;gap:8px}
+.empty{text-align:center;padding:36px 0;color:var(--teal-soft);font-size:.86rem}
+
+@media(max-width:640px){
+  body{padding:12px}
+  .phase-row,.phase-head{grid-template-columns:70px 1fr 1fr;gap:6px}
+}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <h1>행사 로드맵</h1>
+    <span class="sub">2026 PROJECT ROADMAP · 26 Weeks</span>
+    <span class="tag">미리보기</span>
+    <button class="btn-add" id="add-btn">＋ 프로젝트 추가</button>
+  </div>
+
+  <div class="layout">
+    <div class="card">
+      <h2>26주 간트차트</h2>
+      <p class="hint">단계별 일정을 입력하면 자동으로 막대로 표시되고, 캘린더에도 반영됩니다. <span style="color:var(--coral)">│</span> 빨간 선은 오늘.</p>
+      <div class="gantt-scroll">
+        <div class="gantt">
+          <div class="gantt-head">
+            <div></div>
+            <div>
+              <div class="months" id="months-head"></div>
+              <div class="weeks" id="weeks-head"></div>
+            </div>
+            <div></div>
+          </div>
+          <div id="rows"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--p-prep)"></span>기획·준비</span>
+        <span><span class="sw" style="background:var(--p-rehearsal)"></span>리허설</span>
+        <span><span class="sw" style="background:var(--p-event)"></span>행사 운영</span>
+        <span><span class="sw" style="background:var(--p-report)"></span>정산·결과보고</span>
+      </div>
+    </div>
+
+    <div class="kpi-col" id="kpi-col"></div>
+  </div>
+
+  <!-- ── 입력/수정 모달 ── -->
+  <div class="modal-bg" id="modal">
+    <div class="modal">
+      <h3 id="modal-title">프로젝트 추가</h3>
+      <div class="field">
+        <label>프로젝트명</label>
+        <input type="text" id="f-name" placeholder="예: KASA 국제컨퍼런스">
+      </div>
+      <div class="two">
+        <div class="field">
+          <label>예상 매출 (원)</label>
+          <input type="number" id="f-revenue" placeholder="예: 120000000">
+        </div>
+        <div class="field">
+          <label>담당</label>
+          <input type="text" id="f-owner" placeholder="예: 기획팀">
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:8px">
+        <label>단계별 일정</label>
+      </div>
+      <div class="phase-head"><div></div><div>시작일</div><div>종료일</div></div>
+      <div class="phase-row">
+        <div class="pl"><span class="sw" style="background:var(--p-prep)"></span>기획·준비</div>
+        <input type="date" id="prep-s"><input type="date" id="prep-e">
+      </div>
+      <div class="phase-row">
+        <div class="pl"><span class="sw" style="background:var(--p-rehearsal)"></span>리허설</div>
+        <input type="date" id="rehearsal-s"><input type="date" id="rehearsal-e">
+      </div>
+      <div class="phase-row">
+        <div class="pl"><span class="sw" style="background:var(--p-event)"></span>행사 운영</div>
+        <input type="date" id="event-s"><input type="date" id="event-e">
+      </div>
+      <div class="phase-row">
+        <div class="pl"><span class="sw" style="background:var(--p-report)"></span>정산·보고</div>
+        <input type="date" id="report-s"><input type="date" id="report-e">
+      </div>
+
+      <div class="sync-note">
+        <span>🔄</span>
+        <span>저장하면 <b>리허설 · 행사 운영</b> 단계만 <b>캘린더(events)</b>에 자동 등록됩니다. (기획·준비, 정산·보고는 로드맵에만 표시)</span>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" id="cancel-btn">취소</button>
+        <button class="btn-primary" id="save-btn">저장</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================================================================
+   행사 로드맵 — 단독 미리보기
+   - 데이터는 localStorage 에 저장 (단독 실행용 데모)
+   - 실제 플래니어스 앱 통합 시 아래 [API] 표시 지점을
+     fetch('/events', ...) / fetch('/roadmap', ...) 로 교체하면 됩니다.
+   ========================================================================= */
+
+/* 26주 로드맵 기준 시작일 (월요일 기준). 필요시 변경. */
+const ROADMAP_START = new Date(2026, 0, 5);   // 2026-01-05 (월)
+const WEEKS = 26;
+const MS_DAY = 86400000;
+const PHASES = [
+  {key:'prep',      label:'기획·준비',   cat:'company', sync:false},
+  {key:'rehearsal', label:'리허설',      cat:'company', sync:true},
+  {key:'event',     label:'행사 운영',   cat:'event',   sync:true},
+  {key:'report',    label:'정산·보고',   cat:'company', sync:false},
+];
+const $ = s => document.querySelector(s);
+const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const esc = s => String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const won = n => n ? '₩'+Number(n).toLocaleString('ko-KR') : '₩0';
+
+/* 0~26 사이 주(week) 위치(소수 포함)로 날짜 변환 */
+function weekPos(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  return (d - ROADMAP_START) / (7*MS_DAY);
+}
+
+/* ── 저장소 (localStorage 데모) ── */
+const LS_KEY = 'planinus_roadmap_demo';
+function load(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)) || []; }catch(e){ return []; }
+}
+function save(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
+
+let projects = load();
+if(projects.length === 0){
+  /* 데모 시드 (KASA / NASA / 국제포럼 / 교육프로그램) */
+  projects = [
+    {id:id(), name:'KASA', owner:'기획1팀', revenue:120000000, phases:{
+      prep:{s:'2026-01-05',e:'2026-02-15'}, rehearsal:{s:'2026-02-16',e:'2026-02-22'},
+      event:{s:'2026-02-23',e:'2026-02-27'}, report:{s:'2026-03-02',e:'2026-03-06'} }},
+    {id:id(), name:'NASA', owner:'기획2팀', revenue:95000000, phases:{
+      prep:{s:'2026-02-09',e:'2026-03-15'}, rehearsal:{s:'2026-03-16',e:'2026-03-22'},
+      event:{s:'2026-03-23',e:'2026-03-27'}, report:{s:'2026-03-30',e:'2026-04-03'} }},
+    {id:id(), name:'국제포럼', owner:'대외협력', revenue:210000000, phases:{
+      prep:{s:'2026-03-30',e:'2026-05-17'}, rehearsal:{s:'2026-05-18',e:'2026-05-24'},
+      event:{s:'2026-05-25',e:'2026-05-29'}, report:{s:'2026-06-01',e:'2026-06-12'} }},
+    {id:id(), name:'교육프로그램', owner:'교육팀', revenue:64000000, phases:{
+      prep:{s:'2026-04-06',e:'2026-06-07'}, rehearsal:{s:'2026-06-08',e:'2026-06-14'},
+      event:{s:'2026-06-15',e:'2026-06-19'}, report:{s:'2026-06-22',e:'2026-06-26'} }},
+  ];
+  save(projects);
+}
+function id(){ return 'p'+Math.random().toString(36).slice(2,9); }
+
+/* ── 헤더: 월 + 주차 라벨 ── */
+(function(){
+  /* 주차별 시작일의 월 계산 → 연속 동일 월끼리 묶어 span */
+  let mh='', runMonth=null, runStart=1;
+  function flush(end){
+    if(runMonth===null) return;
+    const span = end - runStart + 1;
+    mh += `<div class="mo" style="grid-column:span ${span}">${runMonth+1}월</div>`;
+  }
+  for(let w=1;w<=WEEKS;w++){
+    const d = new Date(ROADMAP_START.getTime() + (w-1)*7*MS_DAY);
+    const m = d.getMonth();
+    if(m!==runMonth){ flush(w-1); runMonth=m; runStart=w; }
+  }
+  flush(WEEKS);
+  $('#months-head').innerHTML = mh;
+
+  let h='';
+  for(let w=1;w<=WEEKS;w++){
+    h += `<div class="wk ${w%4===1?'q':''}">${w%4===1||w===WEEKS?'W'+w:'·'}</div>`;
+  }
+  $('#weeks-head').innerHTML = h;
+})();
+
+/* ── 렌더 ── */
+function render(){
+  const rows = $('#rows');
+  if(projects.length === 0){
+    rows.innerHTML = `<div class="empty">아직 등록된 프로젝트가 없습니다. ＋ 프로젝트 추가로 시작하세요.</div>`;
+  } else {
+    rows.innerHTML = projects.map(p => {
+      let cells=''; for(let i=0;i<WEEKS;i++) cells+='<div class="cell"></div>';
+      let segs='';
+      PHASES.forEach(ph => {
+        const v = p.phases[ph.key];
+        if(!v || !v.s || !v.e) return;
+        let a = Math.max(0, weekPos(v.s));
+        let b = Math.min(WEEKS, weekPos(v.e)+ (1/7)); // 종료일 포함
+        if(b<=a) b = a + (1/7);
+        const left = (a/WEEKS*100), width = ((b-a)/WEEKS*100);
+        segs += `<div class="seg ${ph.key}" style="left:${left}%;width:${width}%" title="${ph.label}: ${v.s} ~ ${v.e}">${width>6?ph.label.slice(0,2):''}</div>`;
+      });
+      const todayPos = weekPos(fmt(new Date()));
+      const todayLine = (todayPos>=0 && todayPos<=WEEKS)
+        ? `<div class="today-line" style="left:${todayPos/WEEKS*100}%"></div>` : '';
+      return `<div class="gantt-row">
+        <div class="proj-name"><span class="dot"></span>${esc(p.name)}</div>
+        <div class="track">${cells}${segs}${todayLine}</div>
+        <div class="row-actions">
+          <button class="icon-btn" data-edit="${p.id}" title="수정">✎</button>
+          <button class="icon-btn del" data-del="${p.id}" title="삭제">🗑</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  renderKPI();
+}
+
+/* ── KPI 계산 ── */
+function renderKPI(){
+  const totalRev = projects.reduce((s,p)=>s+(Number(p.revenue)||0),0);
+
+  /* 월별 매출: 행사 운영 시작월 기준 (없으면 정산 → 첫 단계 순) */
+  const monthly = {};
+  projects.forEach(p=>{
+    const rev = Number(p.revenue)||0; if(!rev) return;
+    const ev = (p.phases.event&&p.phases.event.s) || (p.phases.report&&p.phases.report.s)
+             || ((PHASES.map(ph=>p.phases[ph.key]).find(v=>v&&v.s)||{}).s);
+    if(!ev) return;
+    const k = ev.slice(0,7);            // YYYY-MM
+    monthly[k] = (monthly[k]||0) + rev;
+  });
+  const monthKeys = Object.keys(monthly).sort();
+  const maxM = Math.max(1, ...Object.values(monthly));
+  const monthlyHtml = monthKeys.map(k=>{
+    const mo = Number(k.slice(5,7));
+    const v = monthly[k];
+    return `<div class="mrev">
+      <div class="top"><span class="ml">${mo}월</span><span class="mv">${won(v)}</span></div>
+      <div class="mb"><span class="mbf" style="width:${Math.round(v/maxM*100)}%"></span></div>
+    </div>`;
+  }).join('');
+  /* 진행률: 각 프로젝트 전체 기간 대비 오늘까지 경과 (평균) */
+  const today = new Date();
+  let progSum=0, cnt=0;
+  projects.forEach(p=>{
+    const allDates = PHASES.map(ph=>p.phases[ph.key]).filter(v=>v&&v.s&&v.e);
+    if(allDates.length===0) return;
+    const start = new Date(allDates[0].s+'T00:00:00');
+    const end = new Date(allDates[allDates.length-1].e+'T00:00:00');
+    let r = (today-start)/(end-start);
+    r = Math.max(0, Math.min(1, r));
+    progSum += r; cnt++;
+  });
+  const progress = cnt? Math.round(progSum/cnt*100) : 0;
+
+  /* 리스크: 행사 운영 기간이 서로 겹치는 프로젝트 탐지 */
+  const risks = [];
+  const evRanges = projects.map(p=>({name:p.name, v:p.phases.event})).filter(x=>x.v&&x.v.s&&x.v.e);
+  for(let i=0;i<evRanges.length;i++) for(let j=i+1;j<evRanges.length;j++){
+    const a=evRanges[i], b=evRanges[j];
+    if(a.v.s<=b.v.e && b.v.s<=a.v.e) risks.push(`${a.name} · ${b.name} 행사일 중복`);
+  }
+  /* 리스크: 단계 미입력 */
+  projects.forEach(p=>{
+    const missing = PHASES.filter(ph=>!p.phases[ph.key]||!p.phases[ph.key].s);
+    if(missing.length) risks.push(`${p.name} 단계 미입력 (${missing.length}건)`);
+  });
+
+  $('#kpi-col').innerHTML = `
+    <div class="kpi">
+      <div class="label">누적 예상 매출</div>
+      <div class="val">${won(totalRev)}</div>
+      <div class="sub">프로젝트 ${projects.length}건 · 행사월 기준</div>
+      ${monthKeys.length ? `<div class="mrev-list">${monthlyHtml}</div>` : ''}
+    </div>
+    <div class="kpi">
+      <div class="label">전체 진행률</div>
+      <div class="val">${progress}%</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${progress}%"></div></div>
+    </div>
+    <div class="kpi">
+      <div class="label">리스크</div>
+      <div class="val ${risks.length?'danger':''}">${risks.length}<span style="font-size:.8rem;color:var(--teal-soft);font-weight:600"> 건</span></div>
+      ${risks.length? risks.slice(0,4).map(r=>`<div class="risk-item"><span class="rdot"></span>${esc(r)}</div>`).join('')
+        : '<div class="sub" style="margin-top:6px">감지된 리스크 없음 ✓</div>'}
+    </div>`;
+}
+
+/* ── 캘린더 반영: 단계 일정을 events 형태로 변환 ── */
+function toCalendarEvents(p){
+  /* [API] 실제 앱에서는 이 배열을 각각 fetch('/events',{method:'POST',body:...}) 로 전송 */
+  /* 캘린더 반영 대상: 리허설 · 행사 운영 단계만 (sync:true) */
+  return PHASES.filter(ph=>ph.sync && p.phases[ph.key]&&p.phases[ph.key].s).map(ph=>({
+    date: p.phases[ph.key].s,
+    endDate: p.phases[ph.key].e || p.phases[ph.key].s,
+    title: `${p.name} · ${ph.label}`,
+    category: ph.cat,          // company / event → 캘린더 색상과 동일
+    roadmapId: p.id,           // 로드맵 연결용 (수정/삭제 시 동기화)
+  }));
+}
+function syncCalendar(p){
+  const evs = toCalendarEvents(p);
+  /* 데모: 콘솔로만 확인. 실제 통합 시 아래 주석 해제 + localStorage 제거
+  evs.forEach(e => fetch('/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)}));
+  */
+  console.log('[캘린더 반영] events 등록:', evs);
+}
+
+/* ── 모달 ── */
+let editingId = null;
+function openModal(p){
+  editingId = p ? p.id : null;
+  $('#modal-title').textContent = p ? '프로젝트 수정' : '프로젝트 추가';
+  $('#f-name').value = p? p.name : '';
+  $('#f-revenue').value = p? (p.revenue||'') : '';
+  $('#f-owner').value = p? (p.owner||'') : '';
+  PHASES.forEach(ph=>{
+    const v = p && p.phases[ph.key] ? p.phases[ph.key] : {s:'',e:''};
+    $('#'+ph.key+'-s').value = v.s||'';
+    $('#'+ph.key+'-e').value = v.e||'';
+  });
+  $('#modal').classList.add('on');
+}
+function closeModal(){ $('#modal').classList.remove('on'); editingId=null; }
+
+$('#add-btn').addEventListener('click', ()=>openModal(null));
+$('#cancel-btn').addEventListener('click', closeModal);
+$('#modal').addEventListener('click', e=>{ if(e.target===$('#modal')) closeModal(); });
+
+$('#save-btn').addEventListener('click', ()=>{
+  const name = $('#f-name').value.trim();
+  if(!name){ alert('프로젝트명을 입력하세요.'); return; }
+  const phases = {};
+  PHASES.forEach(ph=>{
+    phases[ph.key] = { s:$('#'+ph.key+'-s').value, e:$('#'+ph.key+'-e').value };
+  });
+  const data = { name, owner:$('#f-owner').value.trim(),
+    revenue:Number($('#f-revenue').value)||0, phases };
+
+  if(editingId){
+    const idx = projects.findIndex(p=>p.id===editingId);
+    projects[idx] = {...projects[idx], ...data};
+    /* [API] PUT /roadmap/:id  + 기존 캘린더 events 갱신 */
+    syncCalendar(projects[idx]);
+  } else {
+    data.id = id();
+    projects.push(data);
+    /* [API] POST /roadmap  + 캘린더 events 생성 */
+    syncCalendar(data);
+  }
+  save(projects);
+  render();
+  closeModal();
+});
+
+/* 수정 / 삭제 */
+$('#rows').addEventListener('click', e=>{
+  const ed = e.target.closest('[data-edit]');
+  const dl = e.target.closest('[data-del]');
+  if(ed){ openModal(projects.find(p=>p.id===ed.dataset.edit)); }
+  if(dl){
+    const p = projects.find(x=>x.id===dl.dataset.del);
+    if(confirm(`'${p.name}' 프로젝트를 삭제할까요?\n연결된 캘린더 일정도 함께 삭제됩니다.`)){
+      projects = projects.filter(x=>x.id!==dl.dataset.del);
+      /* [API] DELETE /roadmap/:id  + roadmapId 가 일치하는 events 삭제 */
+      save(projects); render();
+    }
+  }
+});
+
+render();
+</script>
+</body>
+</html>

@@ -562,8 +562,7 @@ body:has(#page-quote.active) .main{max-width:1280px}
 .rm-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
 .rm-scroll{overflow-x:auto}
 .rm-gantt{min-width:760px}
-.rm-grid-head,.rm-row{display:grid;grid-template-columns:190px 1fr 64px;gap:8px;align-items:center}
-.rm-grid-head{grid-template-columns:190px 1fr}
+.rm-grid-head,.rm-row{display:grid;grid-template-columns:190px var(--rm-track-w,1fr) 64px;gap:8px;align-items:center}
 .rm-months{display:grid;grid-template-columns:repeat(26,1fr);gap:0;margin-bottom:4px}
 .rm-mo{font-size:.64rem;font-weight:600;color:var(--teal-deep);background:#EAF4F1;border:1px solid var(--surface);border-radius:4px;padding:2px 0;text-align:center;white-space:nowrap;overflow:hidden;cursor:pointer}
 .rm-mo:hover{background:#D8EDE7}
@@ -795,6 +794,7 @@ body:has(#page-quote.active) .main{max-width:1280px}
                   <div class="rm-months" id="rm-months"></div>
                   <div class="rm-weeks" id="rm-weeks"></div>
                 </div>
+                <div></div>
               </div>
               <div id="rm-rows"></div>
             </div></div>
@@ -1954,7 +1954,10 @@ async function loadRoadmap(){
   catch(err){ /* 권한오류 등은 조용히 무시 */ }
 }
 
-function rmGridCols(n, unit){ return `repeat(${n},minmax(${unit==='day'?16:20}px,1fr))`; }
+/* 헤더(월·일 라벨)와 각 행(색칠 칸)이 픽셀 단위로 완전히 같은 폭을 쓰도록
+   칸 폭을 고정값으로 통일 — 1fr 계산 차이로 인한 어긋남(라벨 밀림, 아이콘이 날짜 위 겹침) 방지 */
+function rmColW(unit){ return unit==='day' ? 24 : 30; }
+function rmGridCols(n, unit){ return `repeat(${n},${rmColW(unit)}px)`; }
 
 function rmBuildHeader(cols, unit){
   let mh='', i=0;
@@ -1982,7 +1985,12 @@ function renderRoadmap(){
   const isAdmin = ME && ME.role === 'admin';
   const {cols, unit} = rmColumns();
   const gcols = rmGridCols(cols.length, unit);
-  const gantt = $('.rm-gantt'); if(gantt) gantt.style.minWidth = Math.max(720, cols.length*(unit==='day'?24:30))+'px';
+  const trackW = cols.length * rmColW(unit);
+  const gantt = $('.rm-gantt');
+  if(gantt){
+    gantt.style.minWidth = (190 + 8 + trackW + 8 + 64) + 'px';   // 이름 190 + 간격 + 트랙 + 간격 + 버튼 64
+    gantt.style.setProperty('--rm-track-w', trackW + 'px');       // 헤더·행 모두 같은 고정 폭 사용
+  }
   const tgl = $('#rm-toggle-past');
   if(tgl) tgl.textContent = (rmFocusMonth!==null) ? '← 전체 보기' : (rmShowPast ? '지난 달 접기' : '＋ 지난 달 보기');
   rmBuildHeader(cols, unit);
