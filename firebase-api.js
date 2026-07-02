@@ -779,6 +779,43 @@
       return J(attOut(Object.assign({}, aod, aup), mAtt[1]));
     }
 
+    // 기록 수정(본인 또는 관리자) — 출근·퇴근시간, 근무유형, 행사명 변경
+    var mAttP = path.match(/^\/attendance\/([^/]+)$/);
+    if (mAttP && method === 'PUT') {
+      var apu = await requireUser();
+      var apsnap = await db.collection('attendance').doc(mAttP[1]).get();
+      if (!apsnap.exists) return ERR('출근 기록을 찾을 수 없습니다.', 404);
+      var apd = apsnap.data();
+      if (apd.created_by !== apu.id && apu.role !== 'admin')
+        return ERR('본인 또는 관리자만 수정할 수 있습니다.', 403);
+      var apb = jsonBody || {};
+      var ntype = apb.type === 'event' ? 'event' : 'normal';
+      // 'YYYY-MM-DD HH:MM' 또는 'YYYY-MM-DD HH:MM:SS' 허용 → 초 단위까지 정규화
+      function normDT(v) {
+        v = String(v || '').trim();
+        if (!v) return '';
+        if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}$/.test(v)) return v.replace('T', ' ') + ':00';
+        if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.test(v)) return v.replace('T', ' ');
+        return v;
+      }
+      var nIn = normDT(apb.checkIn);
+      var nOut = normDT(apb.checkOut);
+      if (!nIn) return ERR('출근시간을 입력해 주세요.');
+      if (nOut && nOut < nIn) return ERR('퇴근시간은 출근시간보다 늦어야 합니다.');
+      var aupd = {
+        type: ntype,
+        eventName: ntype === 'event' ? String(apb.eventName || '').trim() : '',
+        checkIn: nIn,
+        checkOut: nOut,
+        date: nIn.slice(0, 10),
+        minutes: nOut ? attMinutes(nIn, nOut) : 0,
+        status: nOut ? 'done' : 'working'
+      };
+      if (aupd.type === 'event' && !aupd.eventName) return ERR('행사명을 입력해 주세요.');
+      await db.collection('attendance').doc(mAttP[1]).update(aupd);
+      return J(attOut(Object.assign({}, apd, aupd), mAttP[1]));
+    }
+
     // 기록 삭제(본인 또는 관리자)
     var mAttD = path.match(/^\/attendance\/([^/]+)$/);
     if (mAttD && method === 'DELETE') {
