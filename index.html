@@ -618,6 +618,135 @@ body:has(#page-quote.active) .main{max-width:1280px}
 .rm-phase .pl .sw{width:10px;height:10px;border-radius:3px;flex:none}
 .rm-phase-head{display:grid;grid-template-columns:84px 1fr 1fr;gap:8px;font-size:.68rem;color:var(--teal-soft);margin-bottom:6px;font-weight:600}
 .rm-sync-note{font-size:.73rem;color:var(--teal-deep);background:#EAF4F1;padding:10px 12px;border-radius:10px;margin:10px 0;display:flex;gap:8px}
+
+/* ───────── 출근관리 ───────── */
+.att-clockbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  background:linear-gradient(115deg,var(--teal) 0%,var(--teal-deep) 90%);
+  color:#fff;border-radius:var(--radius);padding:20px 24px;margin-bottom:18px;
+}
+.att-clockbar .cb-date{font-size:.9rem;opacity:.9;font-weight:500}
+.att-clockbar .cb-time{font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1.1}
+.att-clockbar .cb-right{text-align:right}
+.att-clockbar .cb-hi{font-size:.82rem;opacity:.85}
+.att-section-title{font-size:1rem;font-weight:700;color:var(--teal-deep);margin:26px 0 12px;display:flex;align-items:center;gap:8px}
+.att-section-title:first-child{margin-top:0}
+.att-section-title .st-line{flex:1;height:1px;background:var(--line)}
+
+/* 근무 유형 선택 */
+.att-typeseg{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.att-typeseg button{
+  flex:1;min-width:150px;display:flex;align-items:center;gap:10px;justify-content:center;
+  padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);
+  color:#5E7A74;font-size:.92rem;font-weight:600;transition:.14s;
+}
+.att-typeseg button svg{width:20px;height:20px}
+.att-typeseg button:hover{border-color:var(--teal-soft)}
+.att-typeseg button.on{border-color:var(--teal);background:#EAF4F1;color:var(--teal-deep)}
+
+/* 출퇴근 카드 */
+.att-clockcard{padding:22px 24px 24px}
+.att-eventpick{margin-bottom:18px}
+.att-eventpick label{display:block;font-size:.78rem;font-weight:600;color:var(--teal-deep);margin-bottom:6px}
+.att-eventpick select{
+  width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;
+  font-size:.92rem;background:#FBFDFC;font-family:inherit;color:var(--ink);
+}
+.att-eventpick select:focus{border-color:var(--teal);outline:none}
+.att-statusrow{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.att-badge{
+  display:inline-flex;align-items:center;gap:7px;font-size:.82rem;font-weight:700;
+  padding:7px 14px;border-radius:99px;
+}
+.att-badge .bdot{width:9px;height:9px;border-radius:50%}
+.att-badge.working{background:#E4F6EC;color:#12864B}
+.att-badge.working .bdot{background:#22B573;box-shadow:0 0 0 3px rgba(34,181,115,.18);animation:attpulse 1.6s ease-in-out infinite}
+.att-badge.done{background:#E7F0FB;color:#2C6FB0}
+.att-badge.done .bdot{background:#3C8DBC}
+.att-badge.idle{background:var(--mint-bg);color:#8AA39D}
+.att-badge.idle .bdot{background:#B6C7C2}
+@keyframes attpulse{0%,100%{opacity:1}50%{opacity:.4}}
+.att-typechip{font-size:.72rem;font-weight:700;padding:4px 11px;border-radius:99px;background:#EAF4F1;color:var(--teal-deep)}
+.att-typechip.event{background:#FBE9E6;color:var(--coral)}
+
+/* 근무 정보 그리드 */
+.att-info{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.att-info .it{background:#fff;padding:14px 16px;text-align:center}
+.att-info .it .k{font-size:.72rem;color:#9DB3AE;font-weight:600;margin-bottom:5px}
+.att-info .it .v{font-size:1.05rem;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.att-info .it .v.na{color:#C4D3CE;font-weight:500}
+.att-info .it .v.live{color:var(--teal)}
+@media(max-width:520px){.att-info{grid-template-columns:1fr 1fr}.att-info .it.wide{grid-column:1/-1}}
+
+/* 출퇴근 버튼 */
+.att-actions{display:flex;gap:12px}
+.att-actions button{
+  flex:1;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;transition:.14s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.att-actions button svg{width:18px;height:18px}
+.att-btn-in{background:var(--teal);color:#fff}
+.att-btn-in:hover:not(:disabled){background:var(--teal-deep)}
+.att-btn-out{background:#fff;color:var(--teal);border:1.5px solid var(--teal)!important}
+.att-btn-out:hover:not(:disabled){background:#EAF4F1}
+.att-actions button:disabled{opacity:.4;cursor:not-allowed}
+
+/* 관리자 KPI */
+.att-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:8px}
+@media(max-width:760px){.att-kpi-grid{grid-template-columns:1fr 1fr}}
+.att-kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;display:flex;align-items:center;gap:14px}
+.att-kpi .ico{width:44px;height:44px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#EAF4F1;color:var(--teal)}
+.att-kpi .ico svg{width:22px;height:22px}
+.att-kpi.c1 .ico{background:#EAF4F1;color:var(--teal)}
+.att-kpi.c2 .ico{background:#E4F6EC;color:#12864B}
+.att-kpi.c3 .ico{background:#E7F0FB;color:#2C6FB0}
+.att-kpi.c4 .ico{background:#FBE9E6;color:var(--coral)}
+.att-kpi .kv .n{font-size:1.6rem;font-weight:700;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.att-kpi .kv .l{font-size:.76rem;color:#8AA39D;font-weight:600;margin-top:4px}
+
+/* 통계 카드 그리드 */
+.att-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.att-stat-grid .full{grid-column:1/-1}
+@media(max-width:820px){.att-stat-grid{grid-template-columns:1fr}}
+.att-tabs{display:flex;gap:8px;margin-bottom:14px}
+.att-tabs button{padding:8px 16px;border:1px solid var(--line);border-radius:99px;background:var(--surface);font-size:.82rem;font-weight:600;color:#5E7A74}
+.att-tabs button.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* 막대 차트(직원별 근무시간 등) */
+.att-bars{display:flex;flex-direction:column;gap:12px}
+.att-bar-row .top{display:flex;justify-content:space-between;align-items:baseline;font-size:.82rem;margin-bottom:5px}
+.att-bar-row .nm{font-weight:600;color:var(--ink)}
+.att-bar-row .vl{font-weight:700;color:var(--teal-deep);font-variant-numeric:tabular-nums}
+.att-bar{height:9px;background:#EAF1EE;border-radius:99px;overflow:hidden}
+.att-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal-soft),var(--teal));border-radius:99px;transition:width .5s ease}
+.att-bar.blue i{background:linear-gradient(90deg,#7FB4DA,#3C8DBC)}
+.att-bar.coral i{background:linear-gradient(90deg,#E8A79E,var(--coral))}
+
+/* 출근율 도넛 */
+.att-rate{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.att-donut{width:120px;height:120px;flex-shrink:0}
+.att-rate .rlabel{font-size:.82rem;color:#6E8782;line-height:1.7}
+.att-rate .rlabel b{color:var(--teal-deep)}
+
+/* 기록 조회 */
+.att-search-bar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.att-table-wrap{overflow-x:auto}
+table.att-table{width:100%;min-width:640px;border-collapse:collapse;font-size:.84rem}
+table.att-table th{
+  text-align:left;padding:11px 14px;font-size:.74rem;font-weight:600;color:#7E9892;
+  background:#F8FBFA;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+table.att-table td{padding:12px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:middle}
+table.att-table tr:last-child td{border-bottom:none}
+table.att-table tr:hover td{background:#FAFCFB}
+.att-tag{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap}
+.att-tag.normal{background:#EAF4F1;color:var(--teal-deep)}
+.att-tag.event{background:#FBE9E6;color:var(--coral)}
+.att-st{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;white-space:nowrap}
+.att-st .d{width:7px;height:7px;border-radius:50%}
+.att-st.working{color:#12864B}.att-st.working .d{background:#22B573}
+.att-st.done{color:#2C6FB0}.att-st.done .d{background:#3C8DBC}
+.att-mono{font-variant-numeric:tabular-nums;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -702,6 +831,9 @@ body:has(#page-quote.active) .main{max-width:1280px}
       <button data-page="partners">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l5-3 5 3v13M9 21v-4h2v4M14 21V11l5-2v12"/><path d="M8 9h0M8 12h0M8 15h0"/></svg>
         협력업체</button>
+      <button data-page="att">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        출근관리</button>
       <button data-page="users" id="nav-users" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17.5" cy="9" r="2.6"/><path d="M16 14.5a4.6 4.6 0 0 1 4.5 4.5"/></svg>
         직원 관리<span class="nav-badge" id="nav-users-badge" style="display:none">0</span></button>
@@ -869,6 +1001,110 @@ body:has(#page-quote.active) .main{max-width:1280px}
         <div class="card" id="partner-list"></div>
       </section>
 
+      <!-- ── 출근관리 ── -->
+      <section class="page" id="page-att">
+        <div class="page-head">
+          <div><h1>출근관리</h1><p>근무 유형을 선택하고 출근·퇴근 버튼만 누르면 자동으로 기록됩니다.</p></div>
+        </div>
+
+        <!-- 오늘 날짜 + 실시간 시계 -->
+        <div class="att-clockbar">
+          <div>
+            <div class="cb-date" id="att-date"></div>
+            <div class="cb-time" id="att-clock">--:--:--</div>
+          </div>
+          <div class="cb-right">
+            <div class="cb-hi" id="att-hello">오늘도 좋은 하루 되세요</div>
+          </div>
+        </div>
+
+        <!-- ▣ 직원 출퇴근 -->
+        <div class="att-typeseg" id="att-typeseg">
+          <button data-type="normal" class="on">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>
+            평상시 근무</button>
+          <button data-type="event">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6z"/><path d="M4 10h16M9 3v4M15 3v4M8 14h3"/></svg>
+            행사 근무</button>
+        </div>
+
+        <div class="card att-clockcard">
+          <div class="att-eventpick" id="att-eventpick" style="display:none">
+            <label for="att-event-select">행사명 선택</label>
+            <select id="att-event-select"><option value="">행사를 선택하세요</option></select>
+          </div>
+
+          <div class="att-statusrow">
+            <span id="att-badge" class="att-badge idle"><span class="bdot"></span>출근 전</span>
+            <span id="att-typechip" class="att-typechip">평상시 근무</span>
+          </div>
+
+          <div class="att-info">
+            <div class="it"><div class="k">출근시간</div><div class="v na" id="att-in">–</div></div>
+            <div class="it"><div class="k">퇴근시간</div><div class="v na" id="att-out">–</div></div>
+            <div class="it"><div class="k">현재 근무시간</div><div class="v na" id="att-elapsed">–</div></div>
+          </div>
+
+          <div class="att-actions">
+            <button class="att-btn-in" id="att-checkin">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg>
+              출근</button>
+            <button class="att-btn-out" id="att-checkout" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+              퇴근</button>
+          </div>
+        </div>
+
+        <!-- 내 오늘 근무 기록 -->
+        <div class="att-section-title">오늘 내 근무 기록 <span class="st-line"></span></div>
+        <div class="card"><div class="att-table-wrap"><table class="att-table" id="att-mine-table"></table></div></div>
+
+        <!-- ▣ 관리자 대시보드 (관리자 전용) -->
+        <div id="att-admin" style="display:none">
+          <div class="att-section-title">관리자 대시보드 · 오늘 현황 <span class="st-line"></span></div>
+          <div class="att-kpi-grid" id="att-kpi"></div>
+
+          <div class="att-section-title">근무 통계 <span class="st-line"></span></div>
+          <div class="att-tabs" id="att-stat-tabs">
+            <button data-range="week" class="on">주간</button>
+            <button data-range="month">월간</button>
+          </div>
+          <div class="att-stat-grid">
+            <div class="card">
+              <div class="card-head"><h2 id="att-stat-t1">직원별 근무시간</h2></div>
+              <div class="card-body"><div class="att-bars" id="att-stat-emp"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2 id="att-stat-t2">행사별 투입 인원</h2></div>
+              <div class="card-body"><div class="att-bars" id="att-stat-event"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2>출근율</h2></div>
+              <div class="card-body"><div class="att-rate" id="att-stat-rate"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2 id="att-stat-t4">요약</h2></div>
+              <div class="card-body"><div class="att-bars" id="att-stat-summary"></div></div>
+            </div>
+          </div>
+
+          <div class="att-section-title">기록 조회 <span class="st-line"></span></div>
+          <div class="att-search-bar">
+            <div class="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input id="att-q-name" type="text" placeholder="직원명·행사명 검색">
+            </div>
+            <input id="att-q-date" type="date" class="att-mono" style="padding:0 12px;border:1.5px solid var(--line);border-radius:10px;background:#FBFDFC;font-family:inherit;color:var(--ink)">
+            <div class="cal-filters" id="att-q-filter">
+              <button class="chip on" data-f="all">전체</button>
+              <button class="chip" data-f="normal">평상시 근무</button>
+              <button class="chip" data-f="event">행사 근무</button>
+            </div>
+          </div>
+          <div class="card"><div class="att-table-wrap"><table class="att-table" id="att-log-table"></table></div></div>
+        </div>
+      </section>
+
       <!-- ── 직원 관리 (관리자 전용) ── -->
       <section class="page" id="page-users">
         <div class="page-head">
@@ -1018,6 +1254,9 @@ async function enterApp(user){
   $('#nav-users').style.display      = isAdmin ? 'flex' : 'none';
   $('#rm-add-btn').style.display = isAdmin ? 'inline-flex' : 'none';
   $('#rm-import-btn').style.display = isAdmin ? 'inline-block' : 'none';
+  $('#att-admin').style.display = isAdmin ? 'block' : 'none';
+  $('#att-hello').textContent = `${user.name} 님, 오늘도 좋은 하루 되세요`;
+  attStartClock();
   $('#login-screen').classList.add('hidden');
   $('#app').classList.add('active');
   go('dash');
@@ -1061,6 +1300,7 @@ async function loadAll(){
     renderDash(); renderCal(); renderLib(); renderNotices();
     loadPartners();
     loadRoadmap();
+    loadAttendance();
     api('/settings').then(s => { APP_SETTINGS = s || {}; }).catch(()=>{});
   }catch(err){ toast(err.message, true); }
 }
@@ -1074,6 +1314,7 @@ function go(page){
     if(f && !f.src) f.src = 'quote.html?v=' + Date.now();   // 캐시 무시하고 항상 최신 로드
   }
   if(page === 'users') loadUsers();
+  if(page === 'att'){ if(typeof loadAttendance==='function') loadAttendance(); }
   window.scrollTo({top:0});
 }
 $('#nav').addEventListener('click', e => { const b=e.target.closest('button'); if(b) go(b.dataset.page); });
@@ -2251,6 +2492,331 @@ async function submitFile(){
     closeModal(); toast('자료를 등록했습니다.'); await loadAll();
   }catch(err){ toast(err.message,true); if(btn){ btn.disabled=false; btn.textContent='등록'; } }
 }
+
+/* ═══════════ 출근관리 ═══════════ */
+let ATT_MINE = [], ATT_ALL = [], ATT_EMP_COUNT = 0;
+let attType = 'normal', attStatRange = 'week', attLogFilter = 'all';
+let attClockTimer = null;
+
+const padN = n => String(n).padStart(2,'0');
+const attHM = s => (s||'').slice(11,16);                    // 'YYYY-MM-DD HH:MM:SS' → 'HH:MM'
+function attDur(min){                                       // 분 → '2시간 30분'
+  min = Math.max(0, Math.round(min||0));
+  const h = Math.floor(min/60), m = min%60;
+  return h ? (m ? `${h}시간 ${m}분` : `${h}시간`) : `${m}분`;
+}
+
+/* 실시간 시계 + 근무시간 타이머 */
+function attStartClock(){
+  const tick = () => {
+    const d = new Date();
+    const c = $('#att-clock'); if(c) c.textContent = `${padN(d.getHours())}:${padN(d.getMinutes())}:${padN(d.getSeconds())}`;
+    const dt = $('#att-date'); if(dt) dt.textContent = d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+    attTickElapsed();
+  };
+  tick();
+  if(!attClockTimer) attClockTimer = setInterval(tick, 1000);
+}
+function attTickElapsed(){
+  const open = ATT_MINE.find(r => r.status==='working');
+  const el = $('#att-elapsed'); if(!el) return;
+  if(!open){ return; }
+  const start = new Date(String(open.checkIn).replace(' ','T'));
+  let s = Math.max(0, Math.floor((Date.now()-start.getTime())/1000));
+  const h = Math.floor(s/3600); s -= h*3600; const m = Math.floor(s/60); const ss = s - m*60;
+  el.textContent = `${padN(h)}:${padN(m)}:${padN(ss)}`;
+}
+
+/* 데이터 로드 */
+async function loadAttendance(){
+  try{
+    ATT_MINE = await api('/attendance/mine') || [];
+    if(ME && ME.role === 'admin'){
+      ATT_ALL = await api('/attendance') || [];
+      try{ const us = await api('/users') || []; ATT_EMP_COUNT = us.filter(u => u.status==='active').length; }catch(e){}
+    }
+    renderAtt();
+  }catch(err){ /* 조용히 무시 (다른 화면 이용에 지장 없도록) */ }
+}
+
+function renderAtt(){
+  attFillEvents();
+  renderAttClock();
+  renderAttMine();
+  if(ME && ME.role === 'admin') renderAttAdmin();
+}
+
+/* 행사 드롭다운 (행사 로드맵 + 캘린더 '행사' 자동 연동) */
+function attFillEvents(){
+  const sel = $('#att-event-select'); if(!sel) return;
+  const names = new Set();
+  (ROADMAP||[]).forEach(r => { if(r && r.name) names.add(r.name); });
+  (EVENTS||[]).forEach(e => { if(e && e.category==='event' && e.title) names.add(e.title); });
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">행사를 선택하세요</option>' +
+    [...names].sort((a,b)=>a.localeCompare(b,'ko')).map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  if(cur) sel.value = cur;
+}
+
+/* 근무 유형 UI */
+function attSetType(type, locked){
+  attType = type;
+  $$('#att-typeseg button').forEach(b => {
+    b.classList.toggle('on', b.dataset.type === type);
+    b.disabled = !!locked;
+    b.style.opacity = (locked && b.dataset.type !== type) ? '.45' : '';
+  });
+  const ep = $('#att-eventpick'); if(ep) ep.style.display = (type === 'event') ? 'block' : 'none';
+  const sel = $('#att-event-select'); if(sel) sel.disabled = !!locked;
+}
+
+/* 출퇴근 카드 */
+function renderAttClock(){
+  const today = fmt(TODAY);
+  const open = ATT_MINE.find(r => r.status==='working');
+  const badge = $('#att-badge'), chip = $('#att-typechip');
+  const inEl = $('#att-in'), outEl = $('#att-out'), elEl = $('#att-elapsed');
+  const bIn = $('#att-checkin'), bOut = $('#att-checkout');
+  if(!badge) return;
+
+  if(open){
+    attSetType(open.type, true);
+    badge.className = 'att-badge working';
+    badge.innerHTML = '<span class="bdot"></span>근무 중';
+    chip.className = 'att-typechip' + (open.type==='event' ? ' event' : '');
+    chip.textContent = open.type==='event' ? ('행사 · ' + open.eventName) : '평상시 근무';
+    inEl.textContent = attHM(open.checkIn); inEl.className = 'v';
+    outEl.textContent = '–'; outEl.className = 'v na';
+    elEl.className = 'v live';
+    bIn.disabled = true; bOut.disabled = false;
+    attTickElapsed();
+  } else {
+    attSetType(attType, false);
+    const done = ATT_MINE.filter(r => r.date===today && r.status==='done')
+      .sort((a,b)=>String(b.checkIn).localeCompare(String(a.checkIn)))[0];
+    if(done){
+      badge.className = 'att-badge done';
+      badge.innerHTML = '<span class="bdot"></span>퇴근 완료';
+      chip.className = 'att-typechip' + (done.type==='event' ? ' event' : '');
+      chip.textContent = done.type==='event' ? ('행사 · ' + done.eventName) : '평상시 근무';
+      inEl.textContent = attHM(done.checkIn); inEl.className = 'v';
+      outEl.textContent = attHM(done.checkOut); outEl.className = 'v';
+      elEl.textContent = attDur(done.minutes); elEl.className = 'v';
+    } else {
+      badge.className = 'att-badge idle';
+      badge.innerHTML = '<span class="bdot"></span>출근 전';
+      chip.className = 'att-typechip' + (attType==='event' ? ' event' : '');
+      chip.textContent = attType==='event' ? '행사 근무' : '평상시 근무';
+      inEl.textContent = '–'; inEl.className = 'v na';
+      outEl.textContent = '–'; outEl.className = 'v na';
+      elEl.textContent = '–'; elEl.className = 'v na';
+    }
+    bIn.disabled = false; bOut.disabled = true;
+  }
+}
+
+/* 내 오늘 근무 기록 표 */
+function renderAttMine(){
+  const tb = $('#att-mine-table'); if(!tb) return;
+  const t = fmt(TODAY);
+  const rows = ATT_MINE.filter(r => r.date===t).sort((a,b)=>String(a.checkIn).localeCompare(String(b.checkIn)));
+  tb.innerHTML = `<thead><tr><th>근무유형</th><th>행사명</th><th>출근</th><th>퇴근</th><th>근무시간</th><th>상태</th></tr></thead><tbody>${
+    rows.length ? rows.map(r => `<tr>
+      <td><span class="att-tag ${r.type}">${r.type==='event'?'행사':'평상시'}</span></td>
+      <td>${r.type==='event'?esc(r.eventName):'<span style="color:#C4D3CE">–</span>'}</td>
+      <td class="att-mono">${attHM(r.checkIn)}</td>
+      <td class="att-mono">${r.checkOut?attHM(r.checkOut):'<span style="color:#C4D3CE">–</span>'}</td>
+      <td class="att-mono">${r.status==='done'?attDur(r.minutes):'<span style="color:var(--teal);font-weight:600">진행 중</span>'}</td>
+      <td><span class="att-st ${r.status}"><span class="d"></span>${r.status==='done'?'퇴근 완료':'근무 중'}</span></td>
+    </tr>`).join('') : `<tr><td colspan="6"><div class="empty" style="padding:28px">오늘 근무 기록이 없습니다. 출근 버튼을 눌러 시작하세요.</div></td></tr>`
+  }</tbody>`;
+}
+
+/* ── 관리자 대시보드 ── */
+function attWeekRange(){
+  const d = new Date(TODAY); const day = (d.getDay()+6)%7;   // 월=0
+  const mon = new Date(d); mon.setDate(d.getDate()-day);
+  return [fmt(mon), fmt(TODAY)];
+}
+function attMonthRange(){
+  return [fmt(new Date(TODAY.getFullYear(), TODAY.getMonth(), 1)), fmt(TODAY)];
+}
+function attWeekdaysBetween(s, e){
+  let n = 0; const d = new Date(s+'T00:00:00'), end = new Date(e+'T00:00:00');
+  while(d <= end){ const w = d.getDay(); if(w!==0 && w!==6) n++; d.setDate(d.getDate()+1); }
+  return n;
+}
+
+function renderAttAdmin(){
+  renderAttKpi();
+  renderAttStats(attStatRange);
+  renderAttLog();
+}
+
+function renderAttKpi(){
+  const t = fmt(TODAY);
+  const today = ATT_ALL.filter(r => r.date===t);
+  const inUsers = new Set(today.map(r => r.created_by));
+  const working = new Set(today.filter(r => r.status==='working').map(r => r.created_by));
+  const done = new Set(today.filter(r => r.status==='done').map(r => r.created_by));
+  const events = new Set(today.filter(r => r.type==='event' && r.eventName).map(r => r.eventName));
+  const cards = [
+    ['c1', `<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17.5" cy="9" r="2.6"/><path d="M16 14.5a4.6 4.6 0 0 1 4.5 4.5"/>`, inUsers.size, '오늘 출근 인원'],
+    ['c2', `<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>`, working.size, '현재 근무 중'],
+    ['c3', `<path d="M20 6 9 17l-5-5"/>`, done.size, '오늘 퇴근 완료'],
+    ['c4', `<path d="M4 6h16v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6z"/><path d="M4 10h16M9 3v4M15 3v4"/>`, events.size, '오늘 행사 진행'],
+  ];
+  $('#att-kpi').innerHTML = cards.map(([c,ic,n,l]) => `
+    <div class="att-kpi ${c}">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ic}</svg></div>
+      <div class="kv"><div class="n">${n}</div><div class="l">${l}</div></div>
+    </div>`).join('');
+}
+
+function attBars(rows, cls){   // rows: [{name, value, sub}]
+  if(!rows.length) return '<div class="empty" style="padding:22px">데이터가 없습니다.</div>';
+  const max = Math.max(...rows.map(r => r.value), 1);
+  return rows.map(r => `<div class="att-bar-row">
+    <div class="top"><span class="nm">${esc(r.name)}</span><span class="vl">${r.sub||''}</span></div>
+    <div class="att-bar ${cls||''}"><i style="width:${Math.max(4, Math.round(r.value/max*100))}%"></i></div>
+  </div>`).join('');
+}
+
+function renderAttStats(range){
+  attStatRange = range;
+  $$('#att-stat-tabs button').forEach(b => b.classList.toggle('on', b.dataset.range===range));
+  const [s,e] = range==='week' ? attWeekRange() : attMonthRange();
+  const inRange = ATT_ALL.filter(r => r.date>=s && r.date<=e);
+  const doneR = inRange.filter(r => r.status==='done');
+
+  /* 카드1 — 직원별 근무시간 + 근무일수 */
+  const byEmp = {};
+  inRange.forEach(r => {
+    const k = r.created_by;
+    byEmp[k] = byEmp[k] || {name:r.userName||'(이름없음)', min:0, days:new Set()};
+    byEmp[k].days.add(r.date);
+    if(r.status==='done') byEmp[k].min += r.minutes;
+  });
+  const empRows = Object.values(byEmp).map(v => ({name:v.name, value:v.min, sub:`${attDur(v.min)} · ${v.days.size}일`}))
+    .sort((a,b)=>b.value-a.value);
+  $('#att-stat-t1').textContent = '직원별 근무시간 · 근무일수';
+  $('#att-stat-emp').innerHTML = attBars(empRows, '');
+
+  /* 카드2 — 행사별 (주간: 근무 인원 / 월간: 투입 횟수) */
+  const evMap = {};
+  inRange.filter(r => r.type==='event' && r.eventName).forEach(r => {
+    evMap[r.eventName] = evMap[r.eventName] || {users:new Set(), count:0};
+    evMap[r.eventName].users.add(r.created_by);
+    evMap[r.eventName].count++;
+  });
+  let evRows;
+  if(range==='week'){
+    $('#att-stat-t2').textContent = '행사별 근무 인원';
+    evRows = Object.entries(evMap).map(([n,v]) => ({name:n, value:v.users.size, sub:`${v.users.size}명`}));
+  } else {
+    $('#att-stat-t2').textContent = '행사별 투입 횟수';
+    evRows = Object.entries(evMap).map(([n,v]) => ({name:n, value:v.count, sub:`${v.count}회`}));
+  }
+  evRows.sort((a,b)=>b.value-a.value);
+  $('#att-stat-event').innerHTML = attBars(evRows, 'coral');
+
+  /* 카드3 — 출근율 (기간 내 출근 직원 / 전체 재직 직원) */
+  const worked = new Set(inRange.map(r => r.created_by)).size;
+  const total = ATT_EMP_COUNT || worked || 1;
+  const rate = Math.min(100, Math.round(worked/total*100));
+  const R=52, C=2*Math.PI*R, off=C*(1-rate/100);
+  $('#att-stat-rate').innerHTML = `
+    <svg class="att-donut" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="${R}" fill="none" stroke="#EAF1EE" stroke-width="12"/>
+      <circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--teal)" stroke-width="12" stroke-linecap="round"
+        stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 60 60)"/>
+      <text x="60" y="58" text-anchor="middle" font-size="22" font-weight="700" fill="var(--teal-deep)">${rate}%</text>
+      <text x="60" y="76" text-anchor="middle" font-size="9" fill="#8AA39D">출근율</text>
+    </svg>
+    <div class="rlabel">${range==='week'?'이번 주':'이번 달'} <b>${worked}명</b>이 출근했습니다.<br>전체 재직 직원 <b>${total}명</b> 기준.</div>`;
+
+  /* 카드4 — 요약 (총 근무일·총 근무시간·초과근무 등) */
+  const manDays = new Set(inRange.map(r => r.created_by+'|'+r.date)).size;
+  const totalMin = doneR.reduce((s2,r)=>s2+r.minutes, 0);
+  // 하루(직원별) 8시간 초과분 합계 — 초과근무 기준은 별도 없음, 참고용
+  const perDay = {};
+  doneR.forEach(r => { const k=r.created_by+'|'+r.date; perDay[k]=(perDay[k]||0)+r.minutes; });
+  const otMin = Object.values(perDay).reduce((s2,m)=>s2+Math.max(0, m-480), 0);
+  $('#att-stat-t4').textContent = range==='week' ? '주간 요약' : '월간 요약';
+  const summ = [
+    ['총 근무일(연인원)', `${manDays}일`],
+    ['총 근무시간', attDur(totalMin)],
+    ['1일 평균 근무', attDur(manDays?Math.round(totalMin/manDays):0)],
+    ['초과근무(1일 8시간 초과·참고)', attDur(otMin)],
+  ];
+  $('#att-stat-summary').innerHTML = summ.map(([k,v]) => `
+    <div class="att-bar-row"><div class="top"><span class="nm">${k}</span><span class="vl">${v}</span></div></div>`).join('');
+}
+
+/* 기록 조회 */
+function renderAttLog(){
+  const tb = $('#att-log-table'); if(!tb) return;
+  const q = ($('#att-q-name').value||'').trim().toLowerCase();
+  const qd = $('#att-q-date').value || '';
+  let rows = ATT_ALL.slice();
+  if(attLogFilter !== 'all') rows = rows.filter(r => r.type === attLogFilter);
+  if(qd) rows = rows.filter(r => r.date === qd);
+  if(q) rows = rows.filter(r => (r.userName||'').toLowerCase().includes(q) || (r.eventName||'').toLowerCase().includes(q));
+  rows = rows.slice(0, 200);
+  tb.innerHTML = `<thead><tr><th>날짜</th><th>직원</th><th>근무유형</th><th>행사명</th><th>출근</th><th>퇴근</th><th>근무시간</th><th>상태</th></tr></thead><tbody>${
+    rows.length ? rows.map(r => `<tr>
+      <td class="att-mono">${r.date}</td>
+      <td>${esc(r.userName||'')}${r.dept?`<span style="color:#9DB3AE;font-size:.72rem"> · ${esc(r.dept)}</span>`:''}</td>
+      <td><span class="att-tag ${r.type}">${r.type==='event'?'행사':'평상시'}</span></td>
+      <td>${r.type==='event'?esc(r.eventName):'<span style="color:#C4D3CE">–</span>'}</td>
+      <td class="att-mono">${attHM(r.checkIn)}</td>
+      <td class="att-mono">${r.checkOut?attHM(r.checkOut):'<span style="color:#C4D3CE">–</span>'}</td>
+      <td class="att-mono">${r.status==='done'?attDur(r.minutes):'–'}</td>
+      <td><span class="att-st ${r.status}"><span class="d"></span>${r.status==='done'?'퇴근 완료':'근무 중'}</span></td>
+    </tr>`).join('') : `<tr><td colspan="8"><div class="empty" style="padding:28px">조회된 기록이 없습니다.</div></td></tr>`
+  }</tbody>`;
+}
+
+/* 출근/퇴근 동작 */
+async function attCheckin(){
+  const body = { type: attType };
+  if(attType === 'event'){
+    const ev = $('#att-event-select').value;
+    if(!ev){ toast('행사명을 선택해 주세요.', true); return; }
+    body.eventName = ev;
+  }
+  const b = $('#att-checkin'); b.disabled = true;
+  try{ await api('/attendance/checkin', {method:'POST', body}); toast('출근 처리되었습니다. 좋은 하루 되세요!'); await loadAttendance(); }
+  catch(err){ toast(err.message, true); b.disabled = false; }
+}
+async function attCheckout(){
+  const open = ATT_MINE.find(r => r.status==='working');
+  if(!open){ toast('진행 중인 근무가 없습니다.', true); return; }
+  const b = $('#att-checkout'); b.disabled = true;
+  try{ await api('/attendance/'+open.id+'/checkout', {method:'POST'}); toast('퇴근 처리되었습니다. 수고하셨습니다!'); await loadAttendance(); }
+  catch(err){ toast(err.message, true); b.disabled = false; }
+}
+
+/* 이벤트 바인딩 */
+$('#att-typeseg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b || b.disabled) return;
+  attSetType(b.dataset.type, false);
+  renderAttClock();
+});
+$('#att-checkin').addEventListener('click', attCheckin);
+$('#att-checkout').addEventListener('click', attCheckout);
+$('#att-stat-tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  renderAttStats(b.dataset.range);
+});
+$('#att-q-filter').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  attLogFilter = b.dataset.f;
+  $$('#att-q-filter button').forEach(x => x.classList.toggle('on', x===b));
+  renderAttLog();
+});
+$('#att-q-name').addEventListener('input', () => renderAttLog());
+$('#att-q-date').addEventListener('change', () => renderAttLog());
 
 /* ── 초기화: 저장된 세션 자동 복원 ── */
 (async function init(){

@@ -702,6 +702,94 @@
       return J({ ok: true });
     }
 
+    /* ===== 출근관리(attendance) — 출퇴근 기록 =====
+       읽기: 승인 직원이면 누구나(관리자 통계 + 본인 조회)
+       생성: 본인 기록으로만 / 퇴근·삭제: 본인 또는 관리자
+       기록 1건 = 근무 1세션. type은 'normal'(평상시) 또는 'event'(행사). */
+    function attMinutes(ci, co) {                 // '분' 단위 근무시간
+      if (!ci || !co) return 0;
+      var a = new Date(String(ci).replace(' ', 'T'));
+      var b = new Date(String(co).replace(' ', 'T'));
+      var m = Math.round((b - a) / 60000);
+      return m > 0 ? m : 0;
+    }
+    function attOut(d, id) {                        // 응답 형태 정규화
+      return {
+        id: id, created_by: d.created_by, userName: d.userName || '', dept: d.dept || '',
+        type: d.type === 'event' ? 'event' : 'normal', eventName: d.eventName || '',
+        date: d.date, checkIn: d.checkIn || '', checkOut: d.checkOut || '',
+        minutes: Number(d.minutes) || attMinutes(d.checkIn, d.checkOut),
+        status: d.status === 'done' ? 'done' : 'working'
+      };
+    }
+
+    // 내 기록(직원 화면) — 최신순
+    if (path === '/attendance/mine' && method === 'GET') {
+      var amu = await requireUser();
+      var amsnap = await db.collection('attendance').where('created_by', '==', amu.id).get();
+      var amarr = amsnap.docs.map(function (d) { return attOut(d.data(), d.id); });
+      amarr.sort(function (a, b) { return String(b.checkIn).localeCompare(String(a.checkIn)); });
+      return J(amarr);
+    }
+
+    // 전체 기록(관리자 대시보드·통계·기록 조회) — 최신순
+    if (path === '/attendance' && method === 'GET') {
+      await requireUser();
+      var aasnap = await db.collection('attendance').get();
+      var aaarr = aasnap.docs.map(function (d) { return attOut(d.data(), d.id); });
+      aaarr.sort(function (a, b) { return String(b.checkIn).localeCompare(String(a.checkIn)); });
+      return J(aaarr);
+    }
+
+    // 출근(체크인)
+    if (path === '/attendance/checkin' && method === 'POST') {
+      var acm = await requireUser();
+      var acb = jsonBody || {};
+      var atype = acb.type === 'event' ? 'event' : 'normal';
+      if (atype === 'event' && !String(acb.eventName || '').trim())
+        return ERR('행사명을 선택해 주세요.');
+      // 이미 근무 중(퇴근 안 한 세션)이 있으면 중복 출근 방지
+      // (복합 인덱스가 필요 없도록 created_by로만 조회 후 status는 코드에서 판별)
+      var openSnap = await db.collection('attendance').where('created_by', '==', acm.id).get();
+      var hasOpen = openSnap.docs.some(function (d) { return (d.data().status || 'working') === 'working'; });
+      if (hasOpen) return ERR('이미 근무 중입니다. 먼저 퇴근 처리를 해주세요.');
+      var adoc = {
+        created_by: acm.id, userName: acm.name, dept: acm.dept || '',
+        type: atype, eventName: atype === 'event' ? String(acb.eventName).trim() : '',
+        date: todayStr(), checkIn: nowStr(), checkOut: '', minutes: 0,
+        status: 'working', created_at: nowStr()
+      };
+      var aref = await db.collection('attendance').add(adoc);
+      return J(attOut(adoc, aref.id));
+    }
+
+    // 퇴근(체크아웃)
+    var mAtt = path.match(/^\/attendance\/([^/]+)\/checkout$/);
+    if (mAtt && method === 'POST') {
+      var aou = await requireUser();
+      var asnap = await db.collection('attendance').doc(mAtt[1]).get();
+      if (!asnap.exists) return ERR('출근 기록을 찾을 수 없습니다.', 404);
+      var aod = asnap.data();
+      if (aod.created_by !== aou.id && aou.role !== 'admin')
+        return ERR('본인 또는 관리자만 퇴근 처리를 할 수 있습니다.', 403);
+      if (aod.status === 'done') return ERR('이미 퇴근 처리된 기록입니다.');
+      var aco = nowStr();
+      var aup = { checkOut: aco, minutes: attMinutes(aod.checkIn, aco), status: 'done' };
+      await db.collection('attendance').doc(mAtt[1]).update(aup);
+      return J(attOut(Object.assign({}, aod, aup), mAtt[1]));
+    }
+
+    // 기록 삭제(본인 또는 관리자)
+    var mAttD = path.match(/^\/attendance\/([^/]+)$/);
+    if (mAttD && method === 'DELETE') {
+      var adu = await requireUser();
+      var adsnap = await db.collection('attendance').doc(mAttD[1]).get();
+      if (adsnap.exists && adsnap.data().created_by !== adu.id && adu.role !== 'admin')
+        return ERR('본인 또는 관리자만 삭제할 수 있습니다.', 403);
+      await db.collection('attendance').doc(mAttD[1]).delete();
+      return J({ ok: true });
+    }
+
     return ERR('알 수 없는 요청입니다: ' + method + ' ' + path, 404);
   }
 
