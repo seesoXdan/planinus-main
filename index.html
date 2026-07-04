@@ -140,7 +140,7 @@ input{font-family:inherit}
 .udept-line #udept{font-size:.72rem;color:#7C948E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .urole{flex-shrink:0;font-size:.6rem;font-weight:700;background:var(--teal);color:#fff;padding:1px 7px;border-radius:99px;line-height:1.7;letter-spacing:.02em}
 
-.main{flex:1;min-width:0;padding:30px 36px 60px;max-width:1080px}
+.main{flex:1;min-width:0;padding:30px 36px 60px;max-width:1400px}
 .page{display:none}
 .page.active{display:block;animation:fade .25s ease}
 @keyframes fade{from{opacity:0}to{opacity:1}}
@@ -2329,7 +2329,7 @@ async function loadRoadmap(){
 /* 헤더(월·일 라벨)와 각 행(색칠 칸)이 픽셀 단위로 완전히 같은 폭을 쓰도록
    칸 폭을 고정값으로 통일 — 1fr 계산 차이로 인한 어긋남(라벨 밀림, 아이콘이 날짜 위 겹침) 방지 */
 function rmColW(unit){ return unit==='day' ? 24 : 30; }
-function rmGridCols(n, unit){ return `repeat(${n},${rmColW(unit)}px)`; }
+function rmGridCols(n, unit){ return unit==='day' ? `repeat(${n},${rmColW(unit)}px)` : `repeat(${n},minmax(0,1fr))`; }
 
 function rmBuildHeader(cols, unit){
   let mh='', i=0;
@@ -2357,7 +2357,7 @@ function rmMD(d){ return (+d.slice(5,7))+'.'+(+d.slice(8,10)); }
 function renderRoadmapMobile(){
   const el = $('#rm-mobile'); if(!el) return;
   const now = new Date();
-  const startMonth = (!rmShowPast && now.getFullYear()===RM_YEAR) ? now.getMonth() : 0;
+  const startMonth = (now.getFullYear()===RM_YEAR) ? now.getMonth() : 0;   // 모바일은 항상 이번 달~12월 (지난 달 제외)
   const startMs = new Date(RM_YEAR, startMonth, 1).getTime();
   const endMs = new Date(RM_YEAR, 11, 31, 23, 59).getTime();
   const span = (endMs - startMs) || 1;
@@ -2403,11 +2403,17 @@ function renderRoadmap(){
   renderRoadmapMobile();
   const {cols, unit} = rmColumns();
   const gcols = rmGridCols(cols.length, unit);
-  const trackW = cols.length * rmColW(unit);
+  const fluid = (unit === 'week');                                 // 전체 보기(주 단위): 화면 폭에 맞춰 7~12월 한눈에
   const gantt = $('.rm-gantt');
   if(gantt){
-    gantt.style.minWidth = (190 + 8 + trackW + 8 + 64) + 'px';   // 이름 190 + 간격 + 트랙 + 간격 + 버튼 64
-    gantt.style.setProperty('--rm-track-w', trackW + 'px');       // 헤더·행 모두 같은 고정 폭 사용
+    if(fluid){
+      gantt.style.minWidth = '';                                   // 컨테이너 폭을 채움 → 가로 스크롤 없이 12월까지
+      gantt.style.setProperty('--rm-track-w', 'minmax(0,1fr)');
+    } else {
+      const trackW = cols.length * rmColW(unit);                   // 특정 달(일 단위)만 고정 폭 유지
+      gantt.style.minWidth = (190 + 8 + trackW + 8 + 64) + 'px';
+      gantt.style.setProperty('--rm-track-w', trackW + 'px');
+    }
   }
   const tgl = $('#rm-toggle-past');
   if(tgl) tgl.textContent = (rmFocusMonth!==null) ? '← 전체 보기' : (rmShowPast ? '지난 달 접기' : '＋ 지난 달 보기');
