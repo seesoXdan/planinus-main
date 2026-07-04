@@ -661,6 +661,25 @@ body:has(#page-quote.active) .main{max-width:1280px}
 .rm-phase .pl .sw{width:10px;height:10px;border-radius:3px;flex:none}
 .rm-phase-head{display:grid;grid-template-columns:84px 1fr 1fr;gap:8px;font-size:.68rem;color:var(--teal-soft);margin-bottom:6px;font-weight:600}
 .rm-sync-note{font-size:.73rem;color:var(--teal-deep);background:#EAF4F1;padding:10px 12px;border-radius:10px;margin:10px 0;display:flex;gap:8px}
+/* 로드맵 모바일 (B-1: 전체 기간 압축) */
+#rm-mobile{display:none}
+@media (max-width:860px){
+  .rm-scroll{display:none}
+  #rm-mobile{display:block}
+  .rmm-hint{font-size:.7rem;color:var(--teal-soft);text-align:center;margin:0 0 12px}
+  .rmm-head{display:grid;grid-template-columns:98px 1fr;gap:8px;align-items:end;margin-bottom:8px}
+  .rmm-track-h{position:relative;height:15px}
+  .rmm-mo{position:absolute;top:0;text-align:center;font-size:.62rem;font-weight:600;color:var(--teal-soft)}
+  .rmm-row{display:grid;grid-template-columns:98px 1fr;gap:8px;align-items:center;
+    border-top:1px solid var(--line);padding:10px 0;cursor:pointer}
+  .rmm-row:first-of-type{border-top:none}
+  .rmm-row:active{background:var(--mint-bg)}
+  .rmm-lbl{min-width:0}
+  .rmm-lbl b{display:block;font-size:.76rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rmm-lbl span{font-size:.66rem;color:#9DB3AE}
+  .rmm-track{position:relative;height:20px;border:1px solid #EEF3F1;border-radius:5px;overflow:hidden}
+  .rmm-bar{position:absolute;top:4px;height:12px;border-radius:3px;min-width:3px}
+}
 
 /* ───────── 출근관리 ───────── */
 .att-clockbar{
@@ -1024,6 +1043,7 @@ table.att-table td:last-child{text-align:right;white-space:nowrap}
               </div>
               <div id="rm-rows"></div>
             </div></div>
+            <div id="rm-mobile"></div>
             <div class="rm-legend">
               <span><span class="sw" style="background:#3C8DBC"></span>기획·준비</span>
               <span><span class="sw" style="background:#7C6CD0"></span>리허설</span>
@@ -2333,8 +2353,54 @@ function rmBuildHeader(cols, unit){
   wEl.style.gridTemplateColumns = gcols; wEl.innerHTML = wh;
 }
 
+function rmMD(d){ return (+d.slice(5,7))+'.'+(+d.slice(8,10)); }
+function renderRoadmapMobile(){
+  const el = $('#rm-mobile'); if(!el) return;
+  const now = new Date();
+  const startMonth = (!rmShowPast && now.getFullYear()===RM_YEAR) ? now.getMonth() : 0;
+  const startMs = new Date(RM_YEAR, startMonth, 1).getTime();
+  const endMs = new Date(RM_YEAR, 11, 31, 23, 59).getTime();
+  const span = (endMs - startMs) || 1;
+  const pct = ds => Math.max(0, Math.min(100, (new Date(ds+'T00:00:00').getTime()-startMs)/span*100));
+  let header='', bands=[];
+  for(let m=startMonth; m<=11; m++){
+    const l = Math.max(0,(new Date(RM_YEAR,m,1).getTime()-startMs)/span*100);
+    const r = Math.min(100,(new Date(RM_YEAR,m+1,0,23,59).getTime()-startMs)/span*100);
+    const shade = ((m-startMonth)%2===0) ? '#F4F8F6' : '#FCFEFD';
+    bands.push(`${shade} ${l}%`, `${shade} ${r}%`);
+    header += `<span class="rmm-mo" style="left:${l}%;width:${r-l}%">${m+1}</span>`;
+  }
+  const bandBg = `linear-gradient(90deg,${bands.join(',')})`;
+  if(!ROADMAP.length){ el.innerHTML = `<div class="rm-empty">아직 등록된 프로젝트가 없습니다.</div>`; return; }
+  const todayStr = fmt(TODAY);
+  const evS = p => (p.phases&&p.phases.event&&p.phases.event.s)||'';
+  const sorted = [...ROADMAP].sort((a,b)=>{
+    const ea=evS(a), eb=evS(b);
+    if(!ea&&!eb) return 0; if(!ea) return 1; if(!eb) return -1;
+    const au=ea>=todayStr, bu=eb>=todayStr;
+    if(au!==bu) return au?-1:1;
+    if(au) return ea<eb?-1:1;
+    return ea>eb?-1:1;
+  });
+  const rowsHtml = sorted.map(p=>{
+    const ev = p.phases&&p.phases.event;
+    const dateLabel = (ev&&ev.s) ? (rmMD(ev.s)+(ev.e&&ev.e!==ev.s?('–'+rmMD(ev.e)):'')) : '기간 미정';
+    let bars='';
+    RM_PHASES.forEach(x=>{
+      const v = p.phases&&p.phases[x.key];
+      if(v&&v.s&&v.e){ const l=pct(v.s), r=pct(v.e); bars += `<span class="rmm-bar" style="left:${l}%;width:${Math.max(1.6,r-l)}%;background:${x.sw}"></span>`; }
+    });
+    return `<div class="rmm-row" onclick="openRoadmapDetail('${p.id}')">
+      <div class="rmm-lbl"><b>${esc(p.name)}</b><span>${dateLabel}</span></div>
+      <div class="rmm-track" style="background:${bandBg}">${bars}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="rmm-hint">전체 기간(${startMonth+1}~12월) · 항목을 누르면 상세</div>`
+    + `<div class="rmm-head"><div></div><div class="rmm-track-h">${header}</div></div>` + rowsHtml;
+}
 function renderRoadmap(){
   const isAdmin = ME && ME.role === 'admin';
+  renderRoadmapMobile();
   const {cols, unit} = rmColumns();
   const gcols = rmGridCols(cols.length, unit);
   const trackW = cols.length * rmColW(unit);
