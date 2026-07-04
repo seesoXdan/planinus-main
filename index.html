@@ -100,12 +100,32 @@ input{font-family:inherit}
 .nav button svg{width:18px;height:18px;flex-shrink:0}
 .nav button:hover{background:var(--mint-bg)}
 .nav button.active{background:var(--teal);color:#fff;font-weight:600}
-.sidebar .user{
-  padding:16px 20px;border-top:1px solid var(--line);
-  display:flex;flex-direction:column;gap:10px;
+/* 그룹 아코디언 */
+.nav-group{margin-bottom:2px}
+.nav-group-h{
+  display:flex;align-items:center;gap:11px;width:100%;
+  padding:11px 14px;margin-bottom:2px;border:none;border-radius:10px;
+  background:transparent;color:#3C5A54;font-size:.92rem;font-weight:600;
+  text-align:left;cursor:pointer;transition:background .12s;
 }
-.user-top{display:flex;align-items:center;gap:10px}
-.user-actions{display:flex;gap:14px;flex-wrap:wrap}
+.nav-group-h:hover{background:var(--mint-bg)}
+.nav-group-h .nav-chev{width:15px;height:15px;margin-left:auto;color:#8AA39D;transition:transform .2s}
+.nav-group.open>.nav-group-h .nav-chev{transform:rotate(180deg)}
+.nav-sub{overflow:hidden;max-height:0;transition:max-height .24s ease}
+.nav-group.open>.nav-sub{max-height:420px}
+.nav-sub button{padding:9px 14px 9px 43px;font-weight:500;font-size:.9rem}
+.nav-sub button.active{font-weight:600}
+.sidebar .user{
+  padding:12px 16px;border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;
+}
+.user-ico{
+  width:32px;height:32px;border-radius:8px;border:none;background:none;
+  color:#8AA39D;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;cursor:pointer;transition:background .12s,color .12s;
+}
+.user-ico:hover{background:var(--mint-bg);color:var(--teal)}
+.user-ico svg{width:18px;height:18px}
 .avatar{
   width:36px;height:36px;border-radius:50%;background:var(--teal-soft);
   color:#fff;font-weight:600;font-size:.85rem;
@@ -113,8 +133,7 @@ input{font-family:inherit}
 }
 .user .meta{flex:1;min-width:0}
 .user .meta b{display:block;font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user .meta span{font-size:.72rem;color:#8AA39D;white-space:nowrap}
-.user .logout{background:none;border:none;padding:0;font-size:.72rem;color:#8AA39D;text-decoration:underline;white-space:nowrap;cursor:pointer}
+.user .meta span{font-size:.72rem;color:#8AA39D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 
 .main{flex:1;min-width:0;padding:30px 36px 60px;max-width:1080px}
 .page{display:none}
@@ -519,24 +538,43 @@ body:has(#page-quote.active) .main{max-width:1280px}
 
 /* ───────── 모바일 ───────── */
 .mobile-top{display:none}
+.m-launcher{display:none}
 @media (max-width:860px){
   #app.active{flex-direction:column}
-  .sidebar{
-    width:100%;height:auto;position:fixed;bottom:0;top:auto;z-index:50;
-    flex-direction:row;border-right:none;border-top:1px solid var(--line);
-  }
-  .sidebar .brand,.sidebar .user{display:none}
-  .nav{display:flex;padding:6px 8px;width:100%}
-  .nav button{flex-direction:column;gap:3px;font-size:.64rem;padding:8px 4px;justify-content:center;text-align:center;margin:0}
+  .sidebar{display:none}
   .mobile-top{
     display:flex;align-items:center;justify-content:space-between;
     padding:14px 18px;background:var(--surface);border-bottom:1px solid var(--line);
     position:sticky;top:0;z-index:40;
   }
   .mobile-top img{width:110px}
-  .main{padding:20px 16px 96px}
+  .m-top-left{display:flex;align-items:center;gap:8px;cursor:pointer}
+  .m-home-btn{
+    display:flex;align-items:center;gap:1px;background:none;border:none;
+    color:var(--teal);font-size:.9rem;font-weight:600;cursor:pointer;padding:2px;
+  }
+  .m-home-btn svg{width:20px;height:20px}
+  .main{padding:20px 16px 40px}
   .dash-grid{grid-template-columns:1fr}
   :root{font-size:14px}
+
+  /* 홈 바로가기 (큰 카드 2열) */
+  .m-launcher{display:block;margin-top:22px}
+  .m-launcher-t{font-size:.72rem;letter-spacing:.04em;color:#9DB3AE;margin:0 2px 10px}
+  .m-launcher-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .m-lc{
+    display:flex;flex-direction:column;gap:9px;
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:15px 14px;color:#3C5A54;font-size:.94rem;font-weight:600;
+    text-align:left;position:relative;cursor:pointer;transition:border-color .12s,background .12s;
+  }
+  .m-lc:hover,.m-lc:active{border-color:var(--teal);background:var(--mint-bg)}
+  .m-lc svg{width:24px;height:24px;stroke:var(--teal);flex-shrink:0}
+  .m-lc-badge{
+    position:absolute;top:12px;right:12px;min-width:18px;height:18px;
+    background:var(--coral);color:#fff;font-size:.66rem;font-weight:700;
+    border-radius:99px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;
+  }
 }
 /* 좁은 화면(휴대폰) — 직원 관리 행 레이아웃 */
 @media (max-width:560px){
@@ -818,46 +856,63 @@ table.att-table td:last-child{text-align:right;white-space:nowrap}
       <button data-page="dash" class="active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
         대시보드</button>
-      <button data-page="cal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-        캘린더</button>
-      <button data-page="roadmap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h11M4 10h7M4 15h9"/><rect x="14" y="3" width="6" height="4" rx="1"/><rect x="10" y="8" width="6" height="4" rx="1"/><rect x="12" y="13" width="6" height="4" rx="1"/></svg>
-        행사 로드맵</button>
-      <button data-page="lib">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z"/></svg>
-        자료실</button>
-      <button data-page="notice">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l16-6v14L3 13v-2z"/><path d="M7 13v5a1.5 1.5 0 0 0 3 0v-4"/></svg>
-        공지사항</button>
-      <button data-page="quote">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13a0 0 0 0 1 0 0H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5M9 13h6M9 17h6M9 9h2"/></svg>
-        견적서</button>
-      <button data-page="partners">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l5-3 5 3v13M9 21v-4h2v4M14 21V11l5-2v12"/><path d="M8 9h0M8 12h0M8 15h0"/></svg>
-        협력업체</button>
-      <button data-page="att">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
-        출근관리</button>
-      <button data-page="users" id="nav-users" style="display:none">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17.5" cy="9" r="2.6"/><path d="M16 14.5a4.6 4.6 0 0 1 4.5 4.5"/></svg>
-        직원 관리<span class="nav-badge" id="nav-users-badge" style="display:none">0</span></button>
+
+      <div class="nav-group open">
+        <button class="nav-group-h" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span>업무</span>
+          <svg class="nav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-sub">
+          <button data-page="cal">캘린더</button>
+          <button data-page="roadmap">행사 로드맵</button>
+          <button data-page="quote">견적서</button>
+          <button data-page="partners">협력업체</button>
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <button class="nav-group-h" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 3v-3H4z"/></svg>
+          <span>공지 · 자료</span>
+          <svg class="nav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-sub">
+          <button data-page="notice">공지사항</button>
+          <button data-page="lib">자료실</button>
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <button class="nav-group-h" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17.5" cy="9" r="2.6"/><path d="M16 14.5a4.6 4.6 0 0 1 4.5 4.5"/></svg>
+          <span>인사관리</span>
+          <svg class="nav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-sub">
+          <button data-page="att">출근관리</button>
+          <button data-page="users" id="nav-users" style="display:none">직원 관리<span class="nav-badge" id="nav-users-badge" style="display:none">0</span></button>
+        </div>
+      </div>
     </nav>
     <div class="user">
-      <div class="user-top">
-        <div class="avatar" id="avatar">김</div>
-        <div class="meta"><b id="uname">김플랜</b><span>기획팀</span></div>
-      </div>
-      <div class="user-actions">
-        <button class="logout" id="change-pw">비밀번호 변경</button>
-        <button class="logout" id="logout">로그아웃</button>
-      </div>
+      <div class="avatar" id="avatar">김</div>
+      <div class="meta"><b id="uname">김플랜</b><span>기획팀</span></div>
+      <button class="user-ico" id="change-pw" type="button" title="비밀번호 변경" aria-label="비밀번호 변경">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="15" r="4"/><path d="M10.85 12.15 20 3M18 5l2 2M16 7l2 2"/></svg>
+      </button>
+      <button class="user-ico" id="logout" type="button" title="로그아웃" aria-label="로그아웃">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
     </div>
   </aside>
 
   <div style="flex:1;min-width:0">
     <div class="mobile-top">
+      <div class="m-top-left" data-go="dash" title="홈으로">
+      <button class="m-home-btn" id="m-home-btn" type="button" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>홈</button>
       <img src="data:image/jpeg;base64,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" alt="planinus">
+      </div>
       <div class="avatar" id="avatar-m" style="width:32px;height:32px;font-size:.78rem">김</div>
     </div>
 
@@ -884,6 +939,28 @@ table.att-table td:last-child{text-align:right;white-space:nowrap}
           <div class="card full">
             <div class="card-head"><h2>새로 올라온 자료</h2><button data-go="lib">자료실 가기 →</button></div>
             <div class="card-body"><ul class="mini-list" id="dash-files"></ul></div>
+          </div>
+        </div>
+
+        <div class="m-launcher">
+          <div class="m-launcher-t">바로가기</div>
+          <div class="m-launcher-grid">
+            <button class="m-lc" data-go="cal">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</button>
+            <button class="m-lc" data-go="roadmap">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 5h11M4 10h7M4 15h9"/><rect x="14" y="3" width="6" height="4" rx="1"/><rect x="10" y="8" width="6" height="4" rx="1"/><rect x="12" y="13" width="6" height="4" rx="1"/></svg>행사 로드맵</button>
+            <button class="m-lc" data-go="quote">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M7 3h7l5 5v13a0 0 0 0 1 0 0H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5M9 13h6M9 17h6M9 9h2"/></svg>견적서</button>
+            <button class="m-lc" data-go="notice">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 11l16-6v14L3 13v-2z"/><path d="M7 13v5a1.5 1.5 0 0 0 3 0v-4"/></svg>공지사항</button>
+            <button class="m-lc" data-go="lib">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z"/></svg>자료실</button>
+            <button class="m-lc" data-go="partners">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 21h18M5 21V8l5-3 5 3v13M9 21v-4h2v4M14 21V11l5-2v12"/><path d="M8 9h0M8 12h0M8 15h0"/></svg>협력업체</button>
+            <button class="m-lc" data-go="att">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>출근관리</button>
+            <button class="m-lc" data-go="users" id="m-lc-users" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17.5" cy="9" r="2.6"/><path d="M16 14.5a4.6 4.6 0 0 1 4.5 4.5"/></svg>직원 관리<span class="m-lc-badge" id="m-lc-users-badge" style="display:none">0</span></button>
           </div>
         </div>
       </section>
@@ -1262,6 +1339,7 @@ async function enterApp(user){
   $('#add-notice-btn').style.display = isAdmin ? 'inline-flex' : 'none';
   $('#add-file-btn').style.display   = isAdmin ? 'inline-flex' : 'none';
   $('#nav-users').style.display      = isAdmin ? 'flex' : 'none';
+  $('#m-lc-users').style.display     = isAdmin ? 'flex' : 'none';
   $('#rm-add-btn').style.display = isAdmin ? 'inline-flex' : 'none';
   $('#rm-import-btn').style.display = isAdmin ? 'inline-block' : 'none';
   $('#att-admin').style.display = isAdmin ? 'block' : 'none';
@@ -1317,8 +1395,12 @@ async function loadAll(){
 
 /* ── 페이지 전환 ── */
 function go(page){
-  $$('.nav button').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+  $$('[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === page));
   $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-'+page));
+  const subBtn = document.querySelector('#nav .nav-sub button[data-page="'+page+'"]');
+  if(subBtn){ const g = subBtn.closest('.nav-group'); if(g) g.classList.add('open'); }
+  const homeBtn = $('#m-home-btn');
+  if(homeBtn) homeBtn.style.display = (page === 'dash') ? 'none' : 'flex';
   if(page === 'quote'){
     const f = $('#quote-frame');
     if(f && !f.src) f.src = 'quote.html?v=' + Date.now();   // 캐시 무시하고 항상 최신 로드
@@ -1327,7 +1409,12 @@ function go(page){
   if(page === 'att'){ if(typeof loadAttendance==='function') loadAttendance(); }
   window.scrollTo({top:0});
 }
-$('#nav').addEventListener('click', e => { const b=e.target.closest('button'); if(b) go(b.dataset.page); });
+$('#nav').addEventListener('click', e => {
+  const h = e.target.closest('.nav-group-h');
+  if(h){ h.parentElement.classList.toggle('open'); return; }
+  const b = e.target.closest('button[data-page]');
+  if(b) go(b.dataset.page);
+});
 document.addEventListener('click', e => { const b=e.target.closest('[data-go]'); if(b) go(b.dataset.go); });
 
 /* ── 대시보드 ── */
@@ -2052,6 +2139,8 @@ async function refreshUserBadge(){
     const pend = list.filter(u => u.status === 'pending').length;
     const b = $('#nav-users-badge');
     b.textContent = pend; b.style.display = pend ? 'inline-flex' : 'none';
+    const lb = $('#m-lc-users-badge');
+    if(lb){ lb.textContent = pend; lb.style.display = pend ? 'inline-flex' : 'none'; }
   }catch{ /* 관리자 아님 */ }
 }
 async function loadUsers(){
