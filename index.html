@@ -1470,6 +1470,7 @@ function renderDash(){
     const d = new Date(ws); d.setDate(ws.getDate()+i);
     const ds = fmt(d);
     const evs = EVENTS.filter(ev => { const e = ev.endDate || ev.date; return ds >= ev.date && ds <= e; });
+    if(!evs.length) continue;                      // 일정이 있는 날만 표시
     const isToday = ds === todayStr;
     weekHtml += `<div class="week-day${isToday?' today':''}">
       <div class="week-day-h">
@@ -1477,15 +1478,13 @@ function renderDash(){
         <span class="wd-date">${d.getMonth()+1}/${d.getDate()}</span>
         ${isToday?'<span class="wd-badge">오늘</span>':''}
       </div>
-      ${evs.length
-        ? evs.map(ev => `<div class="today-item">
+      ${evs.map(ev => `<div class="today-item">
             <div class="today-time">${esc(ev.time || '종일')}</div>
             <div><div class="t">${esc(ev.title)}</div><div class="s">${CAT_LABEL[ev.category]||''}</div></div>
-          </div>`).join('')
-        : '<div class="week-none">일정 없음</div>'}
+          </div>`).join('')}
     </div>`;
   }
-  $('#today-list').innerHTML = weekHtml;
+  $('#today-list').innerHTML = weekHtml || '<div class="empty">이번 주 등록된 일정이 없습니다.</div>';
   $('#dash-notices').innerHTML = NOTICES.slice(0,4).map(n =>
     `<li><span class="dot" style="background:${n.pinned?'var(--sand)':'var(--teal-soft)'}"></span>
      <a data-go="notice">${esc(n.title)}</a>
