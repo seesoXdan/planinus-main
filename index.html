@@ -176,6 +176,16 @@ input{font-family:inherit}
 }
 .today-item .t{font-size:.88rem;font-weight:500}
 .today-item .s{font-size:.76rem;color:#8AA39D;margin-top:2px}
+.week-day{border-bottom:1px solid var(--line);padding:9px 0}
+.week-day:last-child{border-bottom:none}
+.week-day-h{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.week-day-h .wd-dow{font-weight:700;font-size:.82rem;color:var(--ink)}
+.week-day-h .wd-date{font-size:.75rem;color:#8AA39D;font-variant-numeric:tabular-nums}
+.week-day-h .wd-badge{font-size:.66rem;font-weight:600;color:#fff;background:var(--teal);padding:1px 7px;border-radius:10px}
+.week-day.today{background:rgba(47,133,119,.05);border-radius:10px;padding:9px 10px;margin:0 -10px}
+.week-day.today .wd-dow{color:var(--teal)}
+.week-day .today-item{padding:6px 0;border-bottom:none}
+.week-none{font-size:.8rem;color:#B4C4C0;padding:3px 0}
 .mini-list li{
   list-style:none;display:flex;align-items:center;gap:10px;
   padding:9px 0;border-bottom:1px dashed var(--line);font-size:.86rem;
@@ -960,7 +970,7 @@ table.att-table td:last-child{text-align:right;white-space:nowrap}
         </div>
         <div class="dash-grid">
           <div class="card">
-            <div class="card-head"><h2>오늘 일정</h2><button data-go="cal">캘린더 전체 보기 →</button></div>
+            <div class="card-head"><h2>이번 주 일정</h2><button data-go="cal">캘린더 전체 보기 →</button></div>
             <div class="card-body" id="today-list"></div>
           </div>
           <div class="card">
@@ -1451,14 +1461,31 @@ document.addEventListener('click', e => { const b=e.target.closest('[data-go]');
 
 /* ── 대시보드 ── */
 function renderDash(){
-  const t = fmt(TODAY);
-  const todays = EVENTS.filter(ev => { const e = ev.endDate || ev.date; return t >= ev.date && t <= e; });
-  $('#today-list').innerHTML = todays.length
-    ? todays.map(ev => `<div class="today-item">
-        <div class="today-time">${esc(ev.time || '종일')}</div>
-        <div><div class="t">${esc(ev.title)}</div><div class="s">${CAT_LABEL[ev.category]||''}</div></div>
-      </div>`).join('')
-    : '<div class="empty">오늘 등록된 일정이 없습니다.</div>';
+  // 이번 주(일~토) 일정
+  const WD = ['일','월','화','수','목','금','토'];
+  const todayStr = fmt(TODAY);
+  const ws = new Date(TODAY); ws.setHours(0,0,0,0); ws.setDate(ws.getDate() - ws.getDay());
+  let weekHtml = '';
+  for(let i=0;i<7;i++){
+    const d = new Date(ws); d.setDate(ws.getDate()+i);
+    const ds = fmt(d);
+    const evs = EVENTS.filter(ev => { const e = ev.endDate || ev.date; return ds >= ev.date && ds <= e; });
+    const isToday = ds === todayStr;
+    weekHtml += `<div class="week-day${isToday?' today':''}">
+      <div class="week-day-h">
+        <span class="wd-dow">${WD[d.getDay()]}</span>
+        <span class="wd-date">${d.getMonth()+1}/${d.getDate()}</span>
+        ${isToday?'<span class="wd-badge">오늘</span>':''}
+      </div>
+      ${evs.length
+        ? evs.map(ev => `<div class="today-item">
+            <div class="today-time">${esc(ev.time || '종일')}</div>
+            <div><div class="t">${esc(ev.title)}</div><div class="s">${CAT_LABEL[ev.category]||''}</div></div>
+          </div>`).join('')
+        : '<div class="week-none">일정 없음</div>'}
+    </div>`;
+  }
+  $('#today-list').innerHTML = weekHtml;
   $('#dash-notices').innerHTML = NOTICES.slice(0,4).map(n =>
     `<li><span class="dot" style="background:${n.pinned?'var(--sand)':'var(--teal-soft)'}"></span>
      <a data-go="notice">${esc(n.title)}</a>
