@@ -1216,13 +1216,19 @@ table.att-table td:last-child{text-align:right;white-space:nowrap}
 
         <!-- ▣ 기록 조회 (전 직원 열람 가능 · 엑셀 다운로드/수정은 관리자 전용) -->
         <div>
-          <div class="att-section-title">기록 조회 <span class="st-line"></span></div>
+          <div class="att-section-title"><span id="att-log-title">기록 조회</span> <span class="st-line"></span></div>
           <div class="att-search-bar">
             <div class="search">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
               <input id="att-q-name" type="text" placeholder="직원명·행사명 검색">
             </div>
             <input id="att-q-date" type="date" class="att-mono" style="padding:0 12px;border:1.5px solid var(--line);border-radius:10px;background:#FBFDFC;font-family:inherit;color:var(--ink)">
+            <div class="cal-filters" id="att-q-range">
+              <button class="chip on" data-r="all">전체</button>
+              <button class="chip" data-r="day">오늘</button>
+              <button class="chip" data-r="week">주간</button>
+              <button class="chip" data-r="month">월간</button>
+            </div>
             <div class="cal-filters" id="att-q-filter">
               <button class="chip on" data-f="all">전체</button>
               <button class="chip" data-f="normal">평상시 근무</button>
@@ -1390,6 +1396,8 @@ async function enterApp(user){
   $('#rm-import-btn').style.display = isAdmin ? 'inline-block' : 'none';
   $('#att-admin').style.display = isAdmin ? 'block' : 'none';
   $('#att-export').style.display = isAdmin ? 'inline-flex' : 'none';
+  $('#att-log-title').textContent = isAdmin ? '기록 조회' : '내 근무 기록';
+  $('#att-q-name').placeholder = isAdmin ? '직원명·행사명 검색' : '행사명 검색';
   $('#att-hello').textContent = `${user.name} 님, 오늘도 좋은 하루 되세요`;
   attStartClock();
   $('#login-screen').classList.add('hidden');
@@ -2709,7 +2717,7 @@ async function submitFile(){
 
 /* ═══════════ 출근관리 ═══════════ */
 let ATT_MINE = [], ATT_ALL = [], ATT_EMP_COUNT = 0;
-let attType = 'normal', attStatRange = 'week', attLogFilter = 'all';
+let attType = 'normal', attStatRange = 'week', attLogFilter = 'all', attLogRange = 'all';
 let attClockTimer = null;
 
 const padN = n => String(n).padStart(2,'0');
@@ -2745,8 +2753,8 @@ function attTickElapsed(){
 async function loadAttendance(){
   try{
     ATT_MINE = await api('/attendance/mine') || [];
-    ATT_ALL = await api('/attendance') || [];        // 전체 기록: 전 직원 열람 가능
     if(ME && ME.role === 'admin'){
+      ATT_ALL = await api('/attendance') || [];      // 전체 기록: 관리자만
       try{ const us = await api('/users') || []; ATT_EMP_COUNT = us.filter(u => u.status==='active').length; }catch(e){}
     }
     renderAtt();
@@ -2971,7 +2979,13 @@ function renderAttStats(range){
 function attFilteredLog(){
   const q = ($('#att-q-name').value||'').trim().toLowerCase();
   const qd = $('#att-q-date').value || '';
-  let rows = ATT_ALL.slice();
+  const isAdmin = ME && ME.role === 'admin';
+  let rows = (isAdmin ? ATT_ALL : ATT_MINE).slice();   // 직원은 본인 기록만
+  if(attLogRange !== 'all'){                            // 일·주간·월간 필터
+    const [s,e] = attLogRange==='day' ? [fmt(TODAY), fmt(TODAY)]
+                : attLogRange==='week' ? attWeekRange() : attMonthRange();
+    rows = rows.filter(r => r.date >= s && r.date <= e);
+  }
   if(attLogFilter !== 'all') rows = rows.filter(r => r.type === attLogFilter);
   if(qd) rows = rows.filter(r => r.date === qd);
   if(q) rows = rows.filter(r => (r.userName||'').toLowerCase().includes(q) || (r.eventName||'').toLowerCase().includes(q));
@@ -3069,12 +3083,48 @@ async function attDelete(id){
   }catch(err){ toast(err.message, true); }
 }
 
-/* 기록 조회 결과 엑셀(.xlsx) 다운로드 — 현재 필터가 적용된 전체 결과 */
+/* 엑셀(.xlsx) 다운로드 — 관리자 전용, 주간·월간·기간별 선택 */
 function attExportExcel(){
   if(!(ME && ME.role === 'admin')){ toast('엑셀 다운로드는 관리자만 가능합니다.', true); return; }
+  const [ws,we] = attWeekRange(), [ms,me] = attMonthRange();
+  modalCard.innerHTML = `
+    <h3>엑셀 다운로드</h3>
+    <div class="field"><label>다운로드 범위</label>
+      <select id="ax-range" onchange="document.getElementById('ax-custom').style.display=this.value==='custom'?'':'none'">
+        <option value="week">주간 — 이번 주 (${ws} ~ ${we})</option>
+        <option value="month">월간 — 이번 달 (${ms} ~ ${me})</option>
+        <option value="custom">기간별 — 직접 선택</option>
+        <option value="all">전체 기록</option>
+      </select>
+    </div>
+    <div class="modal-row" id="ax-custom" style="display:none">
+      <div class="field"><label>시작일</label><input type="date" id="ax-s" value="${ms}" oninput="document.getElementById('ax-e').min=this.value"></div>
+      <div class="field"><label>종료일</label><input type="date" id="ax-e" value="${fmt(TODAY)}" min="${ms}"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-save" onclick="attRunExport()">다운로드</button>
+    </div>`;
+  modalBack.classList.add('open');
+}
+
+function attRunExport(){
+  if(!(ME && ME.role === 'admin')){ toast('엑셀 다운로드는 관리자만 가능합니다.', true); return; }
   if(typeof XLSX === 'undefined'){ toast('엑셀 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', true); return; }
-  const rows = attFilteredLog().slice().sort((a,b)=>String(a.checkIn).localeCompare(String(b.checkIn)));
-  if(!rows.length){ toast('내보낼 기록이 없습니다.', true); return; }
+  const sel = $('#ax-range').value;
+  let s = '', e = '', label = '전체';
+  if(sel === 'week'){ [s,e] = attWeekRange(); label = '주간_' + s + '~' + e; }
+  else if(sel === 'month'){ [s,e] = attMonthRange(); label = '월간_' + s.slice(0,7); }
+  else if(sel === 'custom'){
+    s = $('#ax-s').value; e = $('#ax-e').value;
+    if(!s || !e){ toast('시작일과 종료일을 선택해 주세요.', true); return; }
+    if(e < s){ toast('종료일은 시작일보다 빠를 수 없습니다.', true); return; }
+    label = s + '~' + e;
+  }
+  let rows = ATT_ALL.slice();
+  if(s) rows = rows.filter(r => r.date >= s && r.date <= e);
+  rows.sort((a,b)=>String(a.checkIn).localeCompare(String(b.checkIn)));
+  if(!rows.length){ toast('해당 기간에 기록이 없습니다.', true); return; }
   const header = ['날짜','직원','부서','근무유형','행사명','출근시간','퇴근시간','근무시간(분)','근무시간','상태'];
   const aoa = [header].concat(rows.map(r => [
     r.date, r.userName||'', r.dept||'',
@@ -3089,8 +3139,9 @@ function attExportExcel(){
   ws['!cols'] = [{wch:12},{wch:12},{wch:12},{wch:11},{wch:22},{wch:10},{wch:10},{wch:12},{wch:12},{wch:10}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '출근기록');
-  const fn = `출근기록_${fmt(TODAY)}.xlsx`;
+  const fn = `출근기록_${label}.xlsx`;
   XLSX.writeFile(wb, fn);
+  closeModal();
   toast(`엑셀 ${rows.length}건을 내려받았습니다.`);
 }
 
@@ -3130,6 +3181,12 @@ $('#att-q-filter').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
   attLogFilter = b.dataset.f;
   $$('#att-q-filter button').forEach(x => x.classList.toggle('on', x===b));
+  renderAttLog();
+});
+$('#att-q-range').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  attLogRange = b.dataset.r;
+  $$('#att-q-range button').forEach(x => x.classList.toggle('on', x===b));
   renderAttLog();
 });
 $('#att-q-name').addEventListener('input', () => renderAttLog());
